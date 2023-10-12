@@ -1,0 +1,26 @@
+version: '3.11.4'
+
+services:
+  traefik-dev:
+    image: traefik:v2.10.4
+    container_name: proxy
+    ports:
+      - "80:80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=zonas"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+      - "traefik.http.routers.traefik-dashboard-http.entrypoints=http"
+      - "traefik.http.routers.traefik-dashboard-http.rule=Host(`${TRAEFIK_DOMAIN_DEV}`)"
+      # utilice el servicio especial "traefik" api@internal con la interfaz de usuario web/dashboard
+      - "traefik.http.routers.traefik-dashboard-http.service=api@internal"
+    volumes:
+      # Se requiere para podernos comunicar con Docker
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./services/proxy/traefik.dev.toml:/etc/traefik/traefik.toml
+    networks:
+      - zonas
+
+networks:
+  zonas:
+    external: true

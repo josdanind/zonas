@@ -1,0 +1,31 @@
+version: '3.11.4'
+
+services:
+  bot_dev:
+    container_name: bot_dev
+    build:
+      context: ./services/bot
+      dockerfile: Dockerfile.dev
+    command: [ "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "${BOT_PORT}", "--reload"]
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=zonas"
+      - "traefik.http.services.bot.loadbalancer.server.port=${BOT_PORT}"
+      - "traefik.http.routers.bot-http.entrypoints=http"
+      - "traefik.http.routers.bot-http.rule=Host(`${BOT_DOMAIN_DEV}`)"
+    volumes:
+      - ./services/bot:/bot
+    environment:
+      - TZ=America/Bogota
+      - DEVELOPMENT_MODE=true
+      - BOT_DOMAIN=${BOT_DOMAIN_DEV}
+      - BOT_PORT=${BOT_PORT}
+      - BOT_TOKEN=${BOT_TOKEN}
+      - NGROK_TOKEN=${NGROK_TOKEN}
+    networks:
+      - zonas
+
+networks:
+  zonas:
+    external: true

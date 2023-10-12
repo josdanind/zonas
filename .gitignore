@@ -1,3 +1,10 @@
+#######
+# Own #
+#######
+
+# Ngrok
+config_ngrok.yml
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

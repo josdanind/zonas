@@ -1,0 +1,28 @@
+# Habilita Docker en Traefik, así Traefik puede leer
+# las labels de los otros servicios.
+[providers]
+    [providers.docker]
+        # No expone todos los servicios de Docker,
+        # solo los expuestos explícitamente
+        exposedByDefault = false
+
+[entryPoints]
+    # Crea un entrypoint "http" que escucha el puerto 80
+    [entryPoints.http]
+        address = ":80"
+    # Crea un entrypoint "https" que escucha el puerto 443
+    [entryPoints.https]
+        address = ":443"
+
+# Generar certificado tsl
+[certificatesResolvers]
+    [certificatesResolvers.letsencrypt]
+        [certificatesResolvers.letsencrypt.acme]
+            email = "josdanind@proton.me"
+            storage= "/certificates/acme.json"
+            [certificatesResolvers.letsencrypt.acme.tlsChallenge]
+
+# Configuración del panel de control
+[api]
+    dashboard = true
+    insecure = false
