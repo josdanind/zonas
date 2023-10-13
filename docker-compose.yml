@@ -35,6 +35,29 @@ services:
     networks:
       - zonas
 
+  db:
+    image: postgres:16.0
+    restart: always
+    volumes:
+      - db_zonas:/var/lib/postgresql/data/
+      - ./scripts/db-init_sql.sh:/docker-entrypoint-initdb.d/db-init_sql.sh
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.services.db.loadbalancer.server.port=5432"
+      - "traefik.tcp.routers.db.entrypoints=postgres"
+      # Redirige todo lo que traefik recibe en el puerto 5432 a postgres en el puerto 5432
+      - "traefik.tcp.routers.db.rule=HostSNI(`*`)"
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_USER=${DB_USER}
+      # Databases
+      - DB_ZONAS=${DB_ZONAS}
+    networks:
+      - zonas
+
 networks:
   zonas:
     external: true
+
+volumes:
+  db_zonas:

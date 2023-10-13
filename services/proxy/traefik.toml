@@ -13,6 +13,8 @@
     # Crea un entrypoint "https" que escucha el puerto 443
     [entryPoints.https]
         address = ":443"
+    [entryPoints.postgres]
+        address = ":5432"
 
 # Generar certificado tsl
 [certificatesResolvers]
