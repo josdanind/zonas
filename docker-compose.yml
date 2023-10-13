@@ -9,7 +9,6 @@ services:
     restart: always
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=zonas"
       - "traefik.http.services.bot.loadbalancer.server.port=${BOT_PORT}"
       # Hace que traefik use el dominio con HTTP
       - "traefik.http.routers.bot-http.entrypoints=http"
@@ -27,7 +26,7 @@ services:
       - "traefik.http.routers.bot-http.middlewares=https-redirect"
     environment:
       - TZ=America/Bogota
-      - DEVELOPMENT_MODE=true
+      - DEVELOPMENT_MODE=false
       - BOT_DOMAIN=${BOT_DOMAIN}
       - BOT_PORT=${BOT_PORT}
       - BOT_TOKEN=${BOT_TOKEN}
@@ -45,11 +44,12 @@ services:
       - "traefik.enable=true"
       - "traefik.tcp.services.db.loadbalancer.server.port=5432"
       - "traefik.tcp.routers.db.entrypoints=postgres"
-      # Redirige todo lo que traefik recibe en el puerto 5432 a postgres en el puerto 5432
+      # Redirige todo lo que traefik recibe en el puerto 5432
+      # al contenedor de postgres por el puerto 5432
       - "traefik.tcp.routers.db.rule=HostSNI(`*`)"
     environment:
       - POSTGRES_PASSWORD=${DB_PASS}
-      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_USER=${DB_USER}  
       # Databases
       - DB_ZONAS=${DB_ZONAS}
     networks:
