@@ -6,6 +6,7 @@ services:
     container_name: proxy
     ports:
       - "80:80"
+      - "5433:5433"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=zonas"

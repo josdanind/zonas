@@ -10,6 +10,8 @@
     # Crea un entrypoint "http" que escucha el puerto 80
     [entryPoints.http]
         address = ":80"
+    [entryPoints.postgres]
+        address = ":5433"
 
 # Configuración del panel de control
 [api]

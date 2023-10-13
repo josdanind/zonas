@@ -49,15 +49,16 @@ services:
       - "traefik.tcp.routers.db.rule=HostSNI(`*`)"
     environment:
       - POSTGRES_PASSWORD=${DB_PASS}
-      - POSTGRES_USER=${DB_USER}  
+      - POSTGRES_USER=${DB_USER}
+      - TZ=America/Bogota
       # Databases
       - DB_ZONAS=${DB_ZONAS}
     networks:
       - zonas
 
+volumes:
+  db_zonas:
+
 networks:
   zonas:
     external: true
-
-volumes:
-  db_zonas:
