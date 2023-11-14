@@ -14,7 +14,7 @@ services:
       - traefik-public-certificates:/certificates
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=paga-bot"
+      - "traefik.docker.network=hic-cibus"
       - "traefik.http.services.traefik.loadbalancer.server.port=8080"
       # Hace que traefik use el dominio con HTTP
       - "traefik.http.routers.traefik-dashboard-http.entrypoints=http"
@@ -37,11 +37,11 @@ services:
       - "traefik.http.middlewares.admin-auth.basicauth.users=${TRAEFIK_USER?Varialbe not set}:${TRAEFIK_HASHED_PASSWORD?Varialbe not set}"
       - "traefik.http.routers.traefik-dashboard-https.middlewares=admin-auth"
     networks:
-      - zonas
+      - hic-cibus
 
 volumes:
   traefik-public-certificates:
 
 networks:
-  zonas:
+  hic-cibus:
     external: true

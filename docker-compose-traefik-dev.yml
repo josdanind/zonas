@@ -9,7 +9,7 @@ services:
       - "5433:5433"
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=zonas"
+      - "traefik.docker.network=hic-cibus"
       - "traefik.http.services.traefik.loadbalancer.server.port=8080"
       - "traefik.http.routers.traefik-dashboard-http.entrypoints=http"
       - "traefik.http.routers.traefik-dashboard-http.rule=Host(`${TRAEFIK_DOMAIN_DEV}`)"
@@ -20,8 +20,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./services/proxy/traefik.dev.toml:/etc/traefik/traefik.toml
     networks:
-      - zonas
+      - hic-cibus
 
 networks:
-  zonas:
+  hic-cibus:
     external: true

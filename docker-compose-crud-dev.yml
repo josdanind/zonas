@@ -1,0 +1,58 @@
+version: '3.12'
+
+services:
+  api-crud-dev:
+    container_name: crud
+    build:
+      context: ./services/api_crud
+      dockerfile: Dockerfile.dev
+    command: ["/wait-for-it.sh", "db:5433", "--", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "${CRUD_PORT}", "--reload"]
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.api-crud.loadbalancer.server.port=${CRUD_PORT}"
+      - "traefik.http.routers.api-crud-http.entrypoints=http"
+      - "traefik.http.routers.api-crud-http.rule=Host(`${CRUD_DOMAIN_DEV}`)"
+    volumes:
+      - ./services/api_crud:/api_crud
+    environment:
+      - TZ=America/Bogota
+      - DEVELOPMENT_MODE=true
+      - BOT_DOMAIN=${CRUD_DOMAIN_DEV}
+      - BOT_PORT=${CRUD_PORT}
+    networks:
+      - hic-cibus
+
+  db:
+    image: postgres:16.0
+    restart: always
+    volumes:
+      - db_hic_cibus:/var/lib/postgresql"postgresql"/data/
+      - ./scripts/db-init_sql.sh:/docker-entrypoint-initdb.d/db-init_sql.sh
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.db.entrypoints=postgres"
+      # El enrutador "db" dirige el tráfico al servicio
+      # interno con nombre "postgresql"
+      - "traefik.tcp.routers.db.service=postgresql"
+      # Define el puerto del servicio que traefik debe usar cuando envía
+      # el tráfico al servio "postgresql"
+      - "traefik.tcp.services.postgresql.loadbalancer.server.port=5432"
+      # Redirige todo lo que traefik recibe en el puerto 5433
+      # al contenedor de postgres por el puerto 5432
+      - "traefik.tcp.routers.db.rule=HostSNI(`*`)"
+    environment:
+      - TZ=America/Bogota
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      # Databases
+      - DB_HIC_CIBUS=${DB_HIC_CIBUS}
+    networks:
+      - hic-cibus
+
+volumes:
+  db_hic_cibus:
+
+networks:
+  hic-cibus:
+    external: true
