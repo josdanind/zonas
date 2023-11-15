@@ -1,0 +1,12 @@
+# Dockerfiles
+Dockerfile
+Dockerfile.dev
+
+# Virtual environment
+venv
+
+# Byte-compiled
+__pycache__/*
+
+# Docs
+docs/*
