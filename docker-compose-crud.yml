@@ -21,7 +21,7 @@ services:
       - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
       # Usa el middleware para redireccionar HTTP a HTTPS
-      - "traefik.http.routers.bot-http.middlewares=https-redirect"
+      - "traefik.http.routers.api-crud-http.middlewares=https-redirect"
     environment:
       - TZ=America/Bogota
       - DEVELOPMENT_MODE=true
