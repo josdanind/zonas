@@ -1,5 +1,3 @@
-version: '3.11.4'
-
 services:
   bot:
     container_name: bot
