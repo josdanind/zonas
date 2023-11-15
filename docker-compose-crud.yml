@@ -3,7 +3,7 @@ services:
     container_name: crud
     build:
       context: ./services/api_crud
-    command: ["/wait-for-it.sh", "db:5432", "--", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "${CRUD_PORT}"]
+    command: ["./scripts/wait-for-it.sh", "db:5432", "--", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "${CRUD_PORT}"]
     restart: always
     labels:
       - "traefik.enable=true"
