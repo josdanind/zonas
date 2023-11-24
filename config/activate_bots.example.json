@@ -1,0 +1,9 @@
+[
+    {
+        "name": "your bot",
+        "category": "category for your bot",
+        "description": "describe your bot",
+        "password": "authorization password for your bot",
+        "is_active": true
+    }
+]

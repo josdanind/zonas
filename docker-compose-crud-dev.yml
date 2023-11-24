@@ -13,11 +13,21 @@ services:
       - "traefik.http.routers.api-crud-http.rule=Host(`${CRUD_DOMAIN_DEV}`)"
     volumes:
       - ./services/api_crud:/api_crud
+      - ./config/activate_bots.json:/api_crud/bots/activate_bots.json
     environment:
       - TZ=America/Bogota
       - DEVELOPMENT_MODE=true
       - BOT_DOMAIN=${CRUD_DOMAIN_DEV}
       - BOT_PORT=${CRUD_PORT}
+      # URL to Databases
+      - DB_API_CRUD_URL=postgresql://${DB_USER}:${DB_PASS}@db:${DB_PORT}/${DB_HIC_CIBUS}
+      - DB_BOTS_URL=postgresql://${DB_USER}:${DB_PASS}@db:${DB_PORT}/${DB_BOTS}
+      # Administrator credentials
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - ADMIN_NAME=${ADMIN_NAME}
+
     networks:
       - hic-cibus
 
@@ -45,6 +55,7 @@ services:
       - POSTGRES_PASSWORD=${DB_PASS}
       # Databases
       - DB_HIC_CIBUS=${DB_HIC_CIBUS}
+      - DB_BOTS=${DB_BOTS}
     networks:
       - hic-cibus
 

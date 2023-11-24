@@ -2,6 +2,12 @@
 # Own #
 #######
 
+# Bots
+config/*
+!config/activate_bots.example.json
+services/api_crud/bots/*
+!services/api_crud/bots/activate_bots.example.json
+
 # Ngrok
 config_ngrok.yml
 
