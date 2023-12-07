@@ -4,6 +4,9 @@ from contextlib import asynccontextmanager
 # FastAPI
 from fastapi import FastAPI
 
+# * Routers
+from routers import router
+
 # Environment variables
 from config import administrator
 
@@ -16,7 +19,6 @@ from models import metadata_bots
 from config import engine_db_bots, database_bots
 
 # * related to Hic Cibus database
-
 metadata_bots.create_all(engine_db_bots)
 
 
@@ -31,8 +33,4 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="API CRUD - HiC Cibus", lifespan=lifespan)
-
-
-@app.get("/")
-def home():
-    return administrator
+app.include_router(router)

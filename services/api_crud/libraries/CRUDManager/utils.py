@@ -15,9 +15,7 @@ def take_first_pair(dictionary: dict) -> tuple:
     Returns:
         tuple: El primer par clave-valor del diccionario en forma de tupla (clave, valor).
     """
-    first_pair = next(iter(dictionary.items()))
-
-    return first_pair
+    return next(iter(dictionary.items()))
 
 
 def adapt_value_for_sql(value: str | int) -> str:
