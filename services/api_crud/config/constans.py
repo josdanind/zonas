@@ -11,7 +11,7 @@ from schemas import CrudUserInDB
 MODE: bool = environ["DEVELOPMENT_MODE"]
 
 # * Databases
-DB_API_CRUD_URL: str = environ["DB_API_CRUD_URL"]
+DB_HIC_CIBUS_URL: str = environ["DB_HIC_CIBUS_URL"]
 DB_BOTS_URL: str = environ["DB_BOTS_URL"]
 
 # * Admin user

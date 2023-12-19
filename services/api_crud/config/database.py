@@ -7,12 +7,12 @@ from databases import Database
 from sqlalchemy import create_engine, MetaData
 
 # Environment Variables
-from .constans import DB_API_CRUD_URL, DB_BOTS_URL
+from .constans import DB_HIC_CIBUS_URL, DB_BOTS_URL
 
 # Database related to API_CRUD service
-engine_db_api_crud = create_engine(DB_API_CRUD_URL, echo=True)
-metadata_api_crud = MetaData()
-database_api_crud = Database(DB_API_CRUD_URL)
+engine_db_hic_cibus = create_engine(DB_HIC_CIBUS_URL, echo=True)
+metadata_hic_cibus = MetaData()
+database_hic_cibus = Database(DB_HIC_CIBUS_URL)
 
 # Database related to bots services
 engine_db_bots = create_engine(DB_BOTS_URL, echo=True)

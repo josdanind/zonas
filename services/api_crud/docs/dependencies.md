@@ -1,7 +1,7 @@
 # Dependencias
 
 ```
-pip install fastapi "uvicorn[standard]" email-validator python-multipart colorama aiohttp SQLAlchemy psycopg2-binary databases asyncpg passlib
+pip install fastapi "uvicorn[standard]" email-validator python-multipart colorama aiohttp SQLAlchemy psycopg2-binary databases asyncpg passlib geoalchemy2
 ```
 ---
 
@@ -14,7 +14,7 @@ pip install fastapi "uvicorn[standard]" email-validator python-multipart
 ## Bases de datos
 
 ```
-pip install SQLAlchemy psycopg2-binary databases asyncpg
+pip install SQLAlchemy psycopg2-binary databases asyncpg geoalchemy2
 ```
 
 ## Utilidades
