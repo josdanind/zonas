@@ -20,7 +20,7 @@ services:
       - BOT_DOMAIN=${CRUD_DOMAIN_DEV}
       - BOT_PORT=${CRUD_PORT}
       # URL to Databases
-      - DB_API_CRUD_URL=postgresql://${DB_USER}:${DB_PASS}@db:${DB_PORT}/${DB_HIC_CIBUS}
+      - DB_HIC_CIBUS_URL=postgresql://${DB_USER}:${DB_PASS}@db:${DB_PORT}/${DB_HIC_CIBUS}
       - DB_BOTS_URL=postgresql://${DB_USER}:${DB_PASS}@db:${DB_PORT}/${DB_BOTS}
       # Administrator credentials
       - ADMIN_USERNAME=${ADMIN_USERNAME}
