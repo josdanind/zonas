@@ -6,11 +6,12 @@ from sqlalchemy import (
     ForeignKey,
     MetaData,
     DateTime,
+    Date,
     func,
     Boolean,
 )
 
-from sqlalchemy.dialects.postgresql import JSON, ARRAY, TEXT, BYTEA
+from sqlalchemy.dialects.postgresql import JSON, ARRAY, TEXT, BYTEA, UUID
 
 # from geoalchemy2 import Geography
 
@@ -42,7 +43,7 @@ def createFarmModel(metadata: MetaData) -> Table:
         Column("name", String(100), unique=True, nullable=False),
         Column("location", JSON),
         Column("data", JSON),
-        Column("created_at", DateTime, default=func.now()),
+        Column("created_at", Date, default=func.now()),
         Column("updated_at", DateTime),
     )
 
@@ -57,9 +58,14 @@ def createCropModel(metadata: MetaData) -> Table:
         Column("id", Integer, primary_key=True),
         Column("farm_id", Integer, ForeignKey("farms.id")),
         Column("crop", String(100), nullable=False),
+        Column("crop_plot", String(50), nullable=False),
+        Column("is_active", Boolean, default=True),
+        Column("seedtime", Date),
+        Column("harvest_dates", ARRAY(Date)),
+        Column("end_of_crop", Date),
         Column("location", JSON),
         Column("categories", ARRAY(String), nullable=False),
-        Column("variety", String(100), nullable=False),
+        Column("varieties", JSON, nullable=False),
         Column("data", JSON),
         Column("created_at", DateTime, default=func.now()),
         Column("updated_at", DateTime),
@@ -76,6 +82,8 @@ def createWorkerModel(metadata: MetaData) -> Table:
         Column("id", Integer, primary_key=True),
         Column("farm_id", Integer, ForeignKey("farms.id")),
         Column("name", String(50), nullable=False),
+        Column("telegram_user", String(50), nullable=False, unique=True),
+        Column("chat_id", Integer, unique=True),
         Column("photography", BYTEA),
         Column("contact", String(100)),
         Column("is_active", Boolean, default=True),
@@ -93,7 +101,8 @@ def createCropWorkerModel(metadata: MetaData) -> Table:
     return Table(
         "crops_workers",
         metadata,
-        Column("farm_id", Integer, ForeignKey("farms.id")),
+        Column("id", Integer, primary_key=True),
+        Column("crop_id", Integer, ForeignKey("crops.id")),
         Column("worker_id", Integer, ForeignKey("workers.id")),
         Column("created_at", DateTime, default=func.now()),
         Column("updated_at", DateTime),
@@ -125,6 +134,7 @@ def createControlSystemModel(metadata: MetaData) -> Table:
         metadata,
         Column("id", Integer, primary_key=True),
         Column("crop_id", Integer, ForeignKey("crops.id")),
+        Column("uuid", UUID, nullable=False, unique=True),
         Column("device", String(100), nullable=False),
         Column("description", TEXT),
         Column("categories", ARRAY(String), nullable=False),
@@ -160,10 +170,11 @@ def createActuatorModel(metadata: MetaData) -> Table:
             Integer,
             ForeignKey("control_systems.id"),
         ),
-        Column("device", String(100), nullable=False),
+        Column("uuid", String(10), nullable=False),
+        Column("ref", String(100), nullable=False),
+        Column("control_type", String(100), nullable=False),
         Column("description", TEXT),
         Column("categories", ARRAY(String), nullable=False),
-        Column("control_type", String(100), nullable=False),
         Column("data", JSON),
         Column("created_at", DateTime, default=func.now()),
         Column("updated_at", DateTime),
@@ -183,10 +194,11 @@ def createSensorModel(metadata: MetaData) -> Table:
             Integer,
             ForeignKey("control_systems.id"),
         ),
-        Column("device", String(100), nullable=False),
+        Column("uuid", String(10), nullable=False),
+        Column("ref", String(100), nullable=False),
+        Column("control_type", String(100), nullable=False),
         Column("description", TEXT),
         Column("categories", ARRAY(String), nullable=False),
-        Column("control_type", String(100), nullable=False),
         Column("data", JSON),
         Column("created_at", DateTime, default=func.now()),
         Column("updated_at", DateTime),

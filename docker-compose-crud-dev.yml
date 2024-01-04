@@ -13,7 +13,7 @@ services:
       - "traefik.http.routers.api-crud-http.rule=Host(`${CRUD_DOMAIN_DEV}`)"
     volumes:
       - ./services/api_crud:/api_crud
-      - ./config/activate_bots.json:/api_crud/bots/activate_bots.json
+      - ./db_init:/api_crud/db_init
     environment:
       - TZ=America/Bogota
       - DEVELOPMENT_MODE=true

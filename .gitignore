@@ -2,11 +2,21 @@
 # Own #
 #######
 
-# Bots
-config/*
-!config/activate_bots.example.json
-services/api_crud/bots/*
-!services/api_crud/bots/activate_bots.example.json
+# DB Init
+# * Bots
+db_init/bots/*
+!db_init/bots/*activate_bots.example.json
+# inside the container
+services/api_crud/db_init/bots/*
+!services/api_crud/db_init/bots/readme.md
+
+# * Hic-cibus
+db_init/hic-cibus/*
+!db_init/hic-cibus/*example.json
+# inside the container
+services/api_crud/db_init/hic-cibus/*
+!services/api_crud/db_init/hic-cibus/readme.md
+
 
 # Ngrok
 config_ngrok.yml

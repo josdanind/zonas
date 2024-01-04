@@ -16,6 +16,10 @@ def crud_message(msg: str) -> str:
     print(f"{Fore.CYAN}CRUD: Bots activos {msg}{Style.RESET_ALL}")
 
 
+def crud_output(msg: str) -> str:
+    print(f"{Fore.CYAN}CRUD: {msg}{Style.RESET_ALL}")
+
+
 def check_output(msg: str = "*" * 20) -> str:
     print(f"{Fore.GREEN}{msg}{Style.RESET_ALL}")
 
@@ -25,3 +29,6 @@ def print_Record_object(record: Record | None = None, record_list: list[Record] 
         for record in record_list:
             record_list = dict(record)
             print(record_list)
+    if record:
+        record_list = dict(record)
+        print(record_list)

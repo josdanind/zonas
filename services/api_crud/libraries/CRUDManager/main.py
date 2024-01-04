@@ -20,8 +20,12 @@ class CRUDManager:
         self.db_table = table
         self.table_name = table.name
 
+    async def change_table(self, model: Table):
+        self.db_table = model
+        self.table_name = model.name
+
     # **********
-    # * Insert *
+    # * Select *
     # **********
     async def select_all(self):
         """
@@ -32,6 +36,14 @@ class CRUDManager:
         - Record (Databases): Todos los registros de la tabla.
         """
         return await self.db.fetch_all(select(self.db_table))
+
+    async def select_and(self, **conditions):
+        query = self.db_table.select()
+
+        for key, value in conditions.items():
+            query = query.where(getattr(self.db_table.c, key) == value)
+
+        return await self.db.fetch_one(query)
 
     async def select_by_keywords(
         self,

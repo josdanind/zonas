@@ -11,7 +11,7 @@ from routers import router
 from config import administrator
 
 # Utils
-from utils.start_server import sign_up_bots
+from utils.start_server import sign_up_bots, sign_up_hic_cibus
 
 # Databases
 # * related to bot database
@@ -33,6 +33,7 @@ async def lifespan(app: FastAPI):
     await database_bots.connect()
     await database_hic_cibus.connect()
     await sign_up_bots()
+    await sign_up_hic_cibus()
     yield
     # Disconnect from the database
     await database_bots.disconnect()
