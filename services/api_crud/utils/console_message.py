@@ -16,6 +16,10 @@ def crud_message(msg: str) -> str:
     print(f"{Fore.CYAN}CRUD: Bots activos {msg}{Style.RESET_ALL}")
 
 
+def crud_error_message(msg: str) -> str:
+    print(f"{Fore.RED}CRUD: {msg}{Style.RESET_ALL}")
+
+
 def crud_output(msg: str) -> str:
     print(f"{Fore.CYAN}CRUD: {msg}{Style.RESET_ALL}")
 

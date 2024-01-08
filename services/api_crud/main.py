@@ -7,9 +7,6 @@ from fastapi import FastAPI
 # Routers
 from routers import router
 
-# Environment variables
-from config import administrator
-
 # Utils
 from utils.start_server import sign_up_bots, sign_up_hic_cibus
 
