@@ -14,12 +14,14 @@ from .hic_cibus.models import (
     createSessionControlSystemModel,
     createActuatorModel,
     createSensorModel,
+    createCrudUser,
 )
 
 # Bots
 botModel = createBotModel(metadata_bots)
 
 # Hic-cibus
+crudUserModel = createCrudUser(metadata_hic_cibus)
 companyModel = createCompanyModel(metadata_hic_cibus)
 farmModel = createFarmModel(metadata_hic_cibus)
 cropModel = createCropModel(metadata_hic_cibus)

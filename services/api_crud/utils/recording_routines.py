@@ -86,7 +86,7 @@ async def create_record(crud_manager: CRUDManager, schema: BaseModel, condition:
     exist = await crud_manager.verify_existence(**condition)
 
     if exist is None:
-        id = await crud_manager.insert(schema.model_dump(exclude={"id"}))
+        id = await crud_manager.insert(schema.model_dump(exclude={"id"}, by_alias=True))
         database_message(
             f"{eval(f'schema.{key}')} was registered in the {crud_manager.table_name} table with id={id}"
         )

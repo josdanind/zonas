@@ -15,15 +15,20 @@ DB_HIC_CIBUS_URL: str = environ["DB_HIC_CIBUS_URL"]
 DB_BOTS_URL: str = environ["DB_BOTS_URL"]
 
 # * Admin user
-administrator: dict = CrudUserInDB(
+administrator = CrudUserInDB(
     **{
         "username": environ["ADMIN_USERNAME"],
         "email": environ["ADMIN_EMAIL"],
         "password": environ["ADMIN_PASSWORD"],
         "data": {
             "is_superuser": True,
-            "name": environ["ADMIN_NAME"],
-            "roles": ["admin"],
+            "full_name": environ["ADMIN_NAME"],
+            "scopes": ["admin"],
         },
     }
-).model_dump(by_alias=True)
+)
+
+# * JWT config
+SECRET_KEY: str = environ["SECRET_KEY"]
+ALGORITHM: str = environ["ALGORITHM"]
+ACCESS_TOKEN_EXPIRE_DAYS: int = int(environ["ACCESS_TOKEN_EXPIRE_DAYS"])

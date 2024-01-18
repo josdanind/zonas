@@ -1,6 +1,7 @@
 from .admin_crud import *
 from .bot import *
 from .to_make_requests import *
+from .token import *
 
 # Hic-cibus Database
 from .hic_cibus.company import CompanyInDB

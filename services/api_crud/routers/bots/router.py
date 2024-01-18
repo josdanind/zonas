@@ -1,8 +1,9 @@
 # Standard Library
 from datetime import datetime
+from typing import Annotated
 
 # FastAPI
-from fastapi import APIRouter, status, HTTPException, Query
+from fastapi import APIRouter, status, HTTPException, Query, Depends
 
 # CRUDManager
 from libraries.CRUDManager import CRUDManager
@@ -11,13 +12,14 @@ from libraries.CRUDManager import CRUDManager
 from config import database_bots
 
 # Schemas
-from schemas import BotInfo, KeywordsForDB, DeletedBots, BotInDB, BotInDBUpdate
+from schemas import BotInfo, KeywordsForDB, DeletedBots, BotInDB, BotInDBUpdate, Token
 
 # Models
-from models import botModel
+from models import botModel, crudUserModel
 
 # Utils
 from utils.console_message import *
+from utils.jwt_manager import user_authorization
 
 router = APIRouter(prefix="/bots", tags=["Bots"])
 
@@ -53,6 +55,7 @@ evitar errores en la consulta.
     """,
 )
 async def get_bots(
+    current_user: Annotated[crudUserModel, Depends(user_authorization)],
     bots: list[str] = Query(
         None, description="Nombres de bots a recuperar de la base de datos."
     ),
@@ -78,7 +81,10 @@ async def get_bots(
     summary="Eliminar uno o varios bots",
     response_model=DeletedBots,
 )
-async def delete_bots(userRequest: KeywordsForDB):
+async def delete_bots(
+    userRequest: KeywordsForDB,
+    current_user: Annotated[crudUserModel, Depends(user_authorization)],
+):
     try:
         crud_manager = CRUDManager(database_bots, botModel)
 
@@ -114,7 +120,10 @@ async def delete_bots(userRequest: KeywordsForDB):
     status_code=status.HTTP_200_OK,
     summary="Crear un bot",
 )
-async def delete_bots(userRequest: BotInDB):
+async def delete_bots(
+    userRequest: BotInDB,
+    current_user: Annotated[crudUserModel, Depends(user_authorization)],
+):
     crud_manager = CRUDManager(database_bots, botModel)
 
     bot_dict = userRequest.model_dump(by_alias=True)
@@ -138,7 +147,11 @@ async def delete_bots(userRequest: BotInDB):
     status_code=status.HTTP_200_OK,
     summary="Actualizar bot",
 )
-async def delete_bots(id: int, userRequest: BotInDBUpdate):
+async def delete_bots(
+    id: int,
+    userRequest: BotInDBUpdate,
+    current_user: Annotated[crudUserModel, Depends(user_authorization)],
+):
     try:
         crud_manager = CRUDManager(database_bots, botModel)
         exists = await crud_manager.verify_existence(bot_id=id)

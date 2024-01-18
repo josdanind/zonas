@@ -1,6 +1,9 @@
 # Standard Library
 import json
 
+# Environments Variables
+from config import administrator
+
 #  Utils
 from utils.console_message import *
 
@@ -20,7 +23,22 @@ from .recording_routines import *
 from models import botModel
 
 # Hic-cibus
-from models import companyModel
+from models import companyModel, crudUserModel
+
+
+# **************
+# * Admin User *
+# **************
+async def sign_up_crud_users() -> None:
+    crud_manager = CRUDManager(database_hic_cibus, crudUserModel)
+
+    await create_record(
+        crud_manager=crud_manager,
+        schema=administrator,
+        condition={"username": administrator.username},
+    )
+
+    del crud_manager
 
 
 async def sign_up_bots() -> None:

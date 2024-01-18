@@ -16,6 +16,24 @@ from sqlalchemy.dialects.postgresql import JSON, ARRAY, TEXT, BYTEA, UUID
 # from geoalchemy2 import Geography
 
 
+# *************
+# * CRUD User *
+# *************
+def createCrudUser(metadata: MetaData) -> Table:
+    return Table(
+        "crud_users",
+        metadata,
+        Column("id", Integer, primary_key=True),
+        Column("username", String(100), unique=True, nullable=False),
+        Column("email", String, nullable=False),
+        Column("disabled", Boolean),
+        Column("hashed_password", String, nullable=False),
+        Column("data", JSON, nullable=False),
+        Column("created_at", DateTime, default=func.now()),
+        Column("updated_at", DateTime),
+    )
+
+
 # ***********
 # * Empresa *
 # ***********
