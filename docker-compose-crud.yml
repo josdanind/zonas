@@ -22,10 +22,6 @@ services:
       - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
       # Usa el middleware para redireccionar HTTP a HTTPS
       - "traefik.http.routers.api-crud-http.middlewares=https-redirect"
-      # Middleware admin-auth para utenticarse con el dashboard
-      # Usando las variables de entorno USERNAME y HASHED_PASSWORD
-      - "traefik.http.middlewares.admin-auth.basicauth.users=${TRAEFIK_USER?Varialbe not set}:${TRAEFIK_HASHED_PASSWORD?Varialbe not set}"
-      - "traefik.http.routers.api-crud-https.middlewares=admin-auth"
     volumes:
       - ./db_init:/api_crud/db_init
     environment:
