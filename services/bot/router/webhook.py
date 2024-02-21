@@ -19,6 +19,8 @@ async def webhook(request: Request):
         try:
             data = await request.json()
 
+            print(data)
+
             async_update = telebot.types.Update.de_json(json.dumps(data))
 
             await bot.process_new_updates([async_update])

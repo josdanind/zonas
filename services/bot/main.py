@@ -1,35 +1,23 @@
+# Standard library
+from contextlib import asynccontextmanager
+
 # FastAPI
 from fastapi import FastAPI
 
 # Utils
-from utils.ngrok import init_ngrok
-
-# Environment variables
-from config import NGROK_TOKEN, DEVELOPMENT_MODE, BOT_DOMAIN
-
-# Bot
-from bot import bot
+from utils.start_server import bot_set_webhook
 
 # Router
 from router import router
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Establece el endpoint para telegram
+    await bot_set_webhook()
+    yield
+
+
 # API
-app = FastAPI(title="Zonas")
+app = FastAPI(title="Tláloc Bot", lifespan=lifespan)
 app.include_router(router)
-
-
-@app.on_event("startup")
-async def startup():
-    if DEVELOPMENT_MODE:
-        # Development domain
-        app_url = init_ngrok(NGROK_TOKEN)
-    else:
-        # Production domain
-        app_url = BOT_DOMAIN
-
-    # Webhook endpoint
-    app_url += "/webhook"
-
-    # Set the webhook to receive Telegram updates and messages
-    await bot.set_webhook(app_url)

@@ -1,5 +1,9 @@
 # Dependencias
 
+```
+pip install fastapi "uvicorn[standard]" email-validator python-multipart pyngrok pyTelegramBotAPI colorama aiohttp
+---
+
 ## FastAPI
 
 ```
@@ -11,7 +15,7 @@ pip install fastapi "uvicorn[standard]" email-validator python-multipart
 Es una librería para hacer bots de Telegram
 
 ```
-pip install pyngrok pyTelegramBotAPI
+pip install pyTelegramBotAPI
 ```
 
 ## Pyngrok
@@ -25,11 +29,11 @@ pip install pyngrok
 ## Utilidades
 
 ```
-pip install colorama decouple aiohttp
+pip install colorama aiohttp
 ```
 
 
 # Instalación Total
 ```
-pip install fastapi "uvicorn[standard]" email-validator python-multipart pyngrok pyTelegramBotAPI colorama decouple aiohttp
+pip install fastapi "uvicorn[standard]" email-validator python-multipart pyngrok pyTelegramBotAPI colorama aiohttp
 ```
