@@ -1,0 +1,6 @@
+{
+    "name": "semillero",
+    "callback_data": "seedbed",
+    "path": "/home/seedbed",
+    "back_button": true
+}

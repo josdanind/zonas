@@ -4,6 +4,8 @@ services:
     build:
       context: ./services/bot
       dockerfile: Dockerfile.dev
+    # depends_on:
+    #   - zonas-api-crud-dev
     command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "${BOT_PORT}", "--reload"]
     restart: always
     labels:
@@ -20,6 +22,7 @@ services:
       - BOT_PORT=${BOT_PORT}
       - BOT_TOKEN=${BOT_TOKEN}
       - NGROK_TOKEN=${NGROK_TOKEN}
+      - API_CRUD_URL=http://api-crud-dev:${CRUD_PORT}
     networks:
       - hic-cibus
 
