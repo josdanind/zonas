@@ -9,7 +9,8 @@ from ..config.bot import bot
 from telebot.types import Message
 
 # TEST
-from ..views import main
+# from ..views import main
+from ..frame_handler.main import frame
 
 
 # ********************
@@ -26,7 +27,4 @@ async def command_handler(message: Message):
             if args:
                 await start_command(message, args=args)
             else:
-                print(main.views)
-                for view in main.views:
-                    print(view.view)
-            print(msg_text, args)
+                print(frame)

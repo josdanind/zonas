@@ -1,0 +1,41 @@
+{
+    "button": {
+        "label": "Huertas",
+        "sub_menu": false
+    },
+    "lobby": {
+        "main_frame--button_label": "Ver todas la huertas",
+        "frames": {
+            "main": {
+                "frame_template": "with_cover",
+                "title": "Huertas",
+                "description": "Seleccione la huerta de tu interés",
+                "back_button": true,
+                "home_button": false
+            },
+            "lobby_frame": {
+                "frame_template": "with_cover",
+                "title": "Huertas",
+                "description": "Selecciona una opción para encontrar la huerta",
+                "back_button": true,
+                "home_button": false
+            }
+        }
+    },
+    "supply_reels": [
+        {
+            "id_name": "category",
+            "frame": {
+                "frame_template": "with_cover",
+                "display_name": "Categorías",
+                "description": "Selecciona una categoría",
+                "back_button": true,
+                "home_button": true
+            },
+            "query": {
+                "key": "by_keyword",
+                "value": "categories"
+            }
+        }
+    ]
+}

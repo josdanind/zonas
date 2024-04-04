@@ -1,5 +1,5 @@
 {
-    "name": "home",
+    "name": "Home",
     "callback_data": "start",
     "path": "/home",
     "back_button": false

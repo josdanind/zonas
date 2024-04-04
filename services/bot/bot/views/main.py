@@ -8,8 +8,23 @@ from config import API_CRUD_URL
 from utils.path_operations import take_folder_names
 from utils.tool_for_views import get_all_views
 
+# Schemas
+from libraries.botViewHandler import MainViewSchema
+
+# Main view
+from .home.view import view as main_view
+
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 views_name = take_folder_names("bot/views")
 
 views = get_all_views(views_name, current_dir)
+
+home_view = MainViewSchema(
+    **main_view.model_dump(),
+    buttons={
+        f"{view.view.name}": {"callback_data": view.view.callback_data}
+        for view in views
+    },
+    api_crud_url=API_CRUD_URL,
+)

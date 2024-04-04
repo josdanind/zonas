@@ -1,0 +1,23 @@
+{
+    "display_name": "Huertas",
+    "path": "seedbed",
+    "view_template": "with_cover",
+    "back_button": true,
+    "home_button": false,
+    "supply_reel": [
+        {
+            "display_name": "Todas",
+            "query": {
+                "key": "by_keyword",
+                "value": "all"
+            }
+        },
+        {
+            "display_name": "Categorías",
+            "query": {
+                "key": "by_keyword",
+                "value": "categories"
+            }
+        }
+    ]
+}
