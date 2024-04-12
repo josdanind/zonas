@@ -11,7 +11,7 @@ from .view import ViewSchema
 
 
 class TheaterSchema(BaseModel):
-    id: UUID
+    id: str
     billboard: str
     container: ContainerSchema
     view: ViewSchema

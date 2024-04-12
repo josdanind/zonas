@@ -1,9 +1,9 @@
 {
     "version": "0.1",
-    "billboard": "orchards",
+    "id": "orchards",
+    "billboard": "Huertas",
     "settings": {
-        "display_galleries": false,
-        "selfButtonLabel": "Ver todas las Huertas"
+        "display_galleries": true
     },
     "container": {
         "endpoint_path": "/container_frames/orchard"
@@ -14,7 +14,7 @@
         "frame": {
             "template": "with_cover",
             "data": {
-                "cover": "/cover.png",
+                "cover": "img/atrium.png",
                 "text_box": {
                     "title": "Huertas Activas",
                     "description": "Seleccione la huerta de tu interés"
@@ -33,7 +33,7 @@
             "frame": {
                 "template": "with_cover",
                 "data": {
-                    "cover": "/cover.png",
+                    "cover": "img/categories.png",
                     "text_box": {
                         "title": "Categorías",
                         "description": "Por favor, seleccione una categoría para filtrar las huertas"

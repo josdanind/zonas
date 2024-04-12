@@ -10,7 +10,7 @@ from telebot.types import Message
 
 # TEST
 # from ..views import main
-from ..frame_handler.main import frame
+from ..frame_handler.main import orchard_theater, theater_handler
 
 
 # ********************
@@ -27,4 +27,6 @@ async def command_handler(message: Message):
             if args:
                 await start_command(message, args=args)
             else:
-                print(frame)
+                # print(orchard_theater)
+                theater = theater_handler.theaters[0]
+                print(theater_handler.lobby_frame.reply_markup)

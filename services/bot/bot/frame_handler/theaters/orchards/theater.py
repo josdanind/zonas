@@ -5,11 +5,11 @@ import os
 from config import API_CRUD_URL
 
 # Utils - BotFrameHandler
-from libraries.BotFrameHandler.utils import set_container_settings
+from libraries.BotFrameHandler.utils import create_TheaterSchema
 
 container_path = os.path.dirname(os.path.abspath(__file__))
 
 # *********
 # *  View *
 # *********
-frame = set_container_settings(container_path)
+theater = create_TheaterSchema(container_path)

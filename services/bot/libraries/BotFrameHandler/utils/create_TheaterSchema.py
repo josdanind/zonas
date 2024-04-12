@@ -1,5 +1,4 @@
 # Standard Library
-import uuid
 import json, os
 from pathlib import Path
 
@@ -15,28 +14,22 @@ from libraries.BotFrameHandler.schemas import (
 
 # Utils - BotFrameHandler
 from .output_msg import print_error_message
+from .error_handler import check_file
 
 
-# def set_container_settings(container_path: Path) -> FrameContainerSchema:
-def set_container_settings(container_path: Path):
+def create_TheaterSchema(container_path: Path) -> TheaterSchema:
     setting_path = os.path.join(container_path, "settings.json")
-    cover_path = os.path.join(container_path, "cover.png")
     settings = {}
 
     try:
-        for dir in [setting_path, cover_path]:
-            # Verificando el directorio del frame
-            if not os.path.exists(dir) or not os.path.isfile(dir):
-                file_name = os.path.basename(dir)
-
-                raise FileNotFoundError(
-                    f'"FrameHandler" -> Se produjo un error al intentar instanciar ContainerFrame:{container_name}. {file_name} no existe.'
-                )
+        check_file(setting_path)
 
         with open(setting_path, "r") as file_settings:
             settings = json.load(file_settings)
 
         # BUILDING THE THEATER
+        # -- Billboard
+        id: str = settings["id"]
         # -- Billboard
         billboard: str = settings["billboard"]
         # -- Container
@@ -45,6 +38,13 @@ def set_container_settings(container_path: Path):
         view = ViewSchema(id_container_main=container.id)
         # -- Atrium
         atrium_data = settings["atrium"]
+        atrium_frame = atrium_data["frame"]
+        atrium_cover = os.path.join(container_path, atrium_frame["data"]["cover"])
+
+        check_file(atrium_cover)
+
+        atrium_frame["data"]["cover"] = atrium_cover
+
         atrium = GallerySchema(
             name="atrium",
             selfButtonLabel=atrium_data["selfButtonLabel"],
@@ -54,6 +54,13 @@ def set_container_settings(container_path: Path):
         galleries = []
 
         for gallery in settings["galleries"]:
+            gallery_frame = gallery["frame"]
+            gallery_cover = os.path.join(container_path, gallery_frame["data"]["cover"])
+
+            check_file(gallery_cover)
+
+            gallery_frame["data"]["cover"] = gallery_cover
+
             galleries.append(
                 GallerySchema(
                     name=gallery["name"],
@@ -64,15 +71,14 @@ def set_container_settings(container_path: Path):
 
         # THEATER
         return TheaterSchema(
-            id=uuid.uuid4(),
+            id=id,
             billboard=billboard,
             container=container,
             view=view,
             atrium=atrium,
             galleries=galleries,
+            display_galleries=settings["settings"]["display_galleries"],
         )
 
     except FileNotFoundError as err:
         print_error_message(err)
-
-    return "Hola Como estas?"

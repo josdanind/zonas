@@ -1,14 +1,13 @@
 # Pydantic
-from pydantic import BaseModel, validator, FilePath
+from pydantic import BaseModel, FilePath, ConfigDict
 
-
-class ButtonSchema(BaseModel):
-    display_name: str
-    callback_data: str
+from telebot.types import InlineKeyboardMarkup
 
 
 class FrameWithImageSchema(BaseModel):
-    cover_path: FilePath
-    title: str
-    description: str
-    buttons: list[ButtonSchema]
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    photo: bytes
+    reply_markup: InlineKeyboardMarkup | None = None
+    caption: str | None = None
+    parse_mode: str | None = None
