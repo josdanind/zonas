@@ -1,11 +1,15 @@
 # Standard Library
-import os
+import os, inspect
 
 
-def check_file(file_path):
+def check_file(file_path: str):
+    file_name = os.path.basename(file_path)
+
+    # Identifica donde se llamo la función
+    frame = inspect.currentframe()
+    caller_frame = frame.f_back
+
     if not os.path.exists(file_path) or not os.path.isfile(file_path):
-        file_name = os.path.basename(file_path)
-
         raise FileNotFoundError(
-            f'"FrameHandler" -> Se produjo un error creando la instancia "Theater". {file_name} no existe.'
+            {"caller": caller_frame.f_code.co_name, "reason": f"{file_name} no existe"},
         )

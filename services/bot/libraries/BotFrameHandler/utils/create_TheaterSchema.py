@@ -13,20 +13,22 @@ from libraries.BotFrameHandler.schemas import (
 )
 
 # Utils - BotFrameHandler
-from .output_msg import print_error_message
+from .output_msg import print_test, print_error_detail
 from .error_handler import check_file
 
 
 def create_TheaterSchema(container_path: Path) -> TheaterSchema:
-    setting_path = os.path.join(container_path, "settings.json")
-    settings = {}
-
     try:
+        theater_name = os.path.basename(container_path)
+        error_message = f"Se produjo un error creando <{theater_name} Theater>"
+        setting_path = os.path.join(container_path, "settings.json")
+        settings = {}
+
+        # Comprueba la existencia del settings.json
         check_file(setting_path)
 
         with open(setting_path, "r") as file_settings:
             settings = json.load(file_settings)
-
         # BUILDING THE THEATER
         # -- Billboard
         id: str = settings["id"]
@@ -79,6 +81,7 @@ def create_TheaterSchema(container_path: Path) -> TheaterSchema:
             galleries=galleries,
             display_galleries=settings["settings"]["display_galleries"],
         )
-
-    except FileNotFoundError as err:
-        print_error_message(err)
+    except FileNotFoundError as e:
+        print_error_detail(
+            title=e.args[0]["caller"], details=[error_message, e.args[0]["reason"]]
+        )
