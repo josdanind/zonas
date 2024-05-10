@@ -3,14 +3,14 @@
     "id": "orchards",
     "billboard": "Huertas",
     "settings": {
-        "display_galleries": false
+        "display_galleries": true
     },
     "container": {
         "endpoint_path": "/container_frames/orchard"
     },
     "atrium": {
         "name": "atrium",
-        "selfButtonLabel": "Ver todas las Huertas",
+        "selfButtonLabel": "Ver Todas las Huertas",
         "frame": {
             "template": "with_cover",
             "data": {

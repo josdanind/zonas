@@ -27,6 +27,5 @@ async def command_handler(message: Message):
             if args:
                 await start_command(message, args=args)
             else:
-                pass
-                # theater = theater_handler.theaters[0]
                 await theater_handler.send_frame(theater_handler.lobby_frame, chat_id)
+                # print(theater_handler.frames)

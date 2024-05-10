@@ -42,11 +42,71 @@ class TheaterHandler:
         self.theaters = theaters
         self.path = path
         self.text_box = text_box
-        self.frames: dict = {}
+        self.frames = {}
         self.frame_template: str = self.__check_template(frame_template)
         self.__lobby_keyboardMarkup = InlineKeyboardMarkup(row_width=row_width)
         self.lobby_frame = self.__create_lobby_frame()
         self.__main_msg_id: int = 0
+
+    def __create_theater_data(self, theater: TheaterSchema, row_width=1):
+        # * KEYBOARD
+        keyboard = InlineKeyboardMarkup(row_width=row_width)
+        buttons: list[InlineKeyboardButton] = []
+
+        # * ATRIUM BUTTON
+        atrium = theater.atrium
+        atrium_frame = atrium.frame
+        atrium_button: InlineKeyboardButton = InlineKeyboardButton(
+            text=atrium.selfButtonLabel, callback_data=f"@{theater.id}://atrium"
+        )
+
+        # * GALLERIES BUTTONS
+        gallery_buttons: list[InlineKeyboardButton] = []
+        for gallery in theater.galleries:
+            button = {
+                "text": gallery.selfButtonLabel,
+                "callback_data": f"@{theater.id}://{gallery.name}",
+            }
+
+            gallery_buttons.append(InlineKeyboardButton(**button))
+
+        # * COVER
+        atrium_cover_path = atrium_frame.data["cover"]
+        check_file(atrium_cover_path)
+
+        with open(atrium_cover_path, mode="rb") as img:
+            photo = img.read()
+
+        # * Creating the keyboard
+        buttons.append(atrium_button)
+        buttons += gallery_buttons
+
+        # -- GoBack Button
+        if atrium_frame.back_button:
+            buttons.append(
+                InlineKeyboardButton(
+                    text="Ir atrás",
+                    callback_data=f"goBack@lobby",
+                )
+            )
+
+        keyboard.add(*buttons)
+
+        # * CAPTION
+        caption = f"<b>{theater.billboard}</b>"
+
+        frame = FrameWithImageSchema(
+            photo=photo, reply_markup=keyboard, caption=caption, parse_mode="HTML"
+        )
+
+        return {
+            f"{theater.id}": {
+                "frame": frame,
+                "display_galleries": theater.display_galleries,
+                "atrium": f"@{theater.id}://atrium",
+                "galleries_buttons": gallery_buttons,
+            }
+        }
 
     def __create_lobby_frame(self):
         """Crea el Frame del Lobby
@@ -63,15 +123,17 @@ class TheaterHandler:
         photo: bytes = b""
 
         try:
+            # *Lobby Photo
             check_file(cover_path)
-
             with open(cover_path, mode="rb") as img:
                 photo = img.read()
 
-            # Contendrá los `InlineKeyboardButtons` para el Keyboard
+            # *Lobby Keyboard
+            # --Buttons list
             buttons: list[InlineKeyboardButton] = []
 
-            # * Crea los botones que erutan a cada `Theater`
+            # En este ciclo for se crea los botones que se exponen en el Lobby,
+            # cada botón es un enlace hacia un Theater:
             for theater in self.theaters:
                 if not theater:
                     raise TheaterError(
@@ -84,8 +146,12 @@ class TheaterHandler:
 
                 theater_id: str = theater.id
                 billboard: str = theater.billboard
+
+                # *Define en el callback_data de cada botón del theater respectivo
+                # *si se va al atrium directamente o se muestran todas las galerías
                 display_galleries: bool = theater.display_galleries
 
+                # Define su se muestran todas las galerías o solo el Atrium
                 theater_callback_data = (
                     f'@{theater_id}://{"galleries" if display_galleries else "atrium"}'
                 )
@@ -96,55 +162,9 @@ class TheaterHandler:
                     )
                 )
 
-                # Theater keyboard
-                keyboard = InlineKeyboardMarkup(row_width=1)
-                theater_buttons: list[InlineKeyboardButton] = []
+                theater_data = self.__create_theater_data(theater)
 
-                # atrium
-                atrium = theater.atrium
-                atrium_frame = atrium.frame
-
-                # Atrium Photo
-                atrium_cover_path = atrium_frame.data["cover"]
-                check_file(atrium_cover_path)
-
-                with open(atrium_cover_path, mode="rb") as img:
-                    atrium_photo = img.read()
-
-                if not display_galleries:
-                    crops = [
-                        {"id": 123, "name": "Jalapeño"},
-                        {"id": 234, "name": "papaya"},
-                    ]
-                else:
-                    theater_buttons.append(
-                        InlineKeyboardButton(
-                            text=atrium.selfButtonLabel,
-                            callback_data=f"@{theater_id}://atrium",
-                        )
-                    )
-
-                    # Galleries
-                    galleries = theater.galleries
-
-                    for gallery in galleries:
-                        theater_buttons.append(
-                            InlineKeyboardButton(
-                                text=gallery.selfButtonLabel,
-                                callback_data=f"@{theater_id}://{gallery.name}",
-                            )
-                        )
-
-                # if atrium_frame.template == "with_cover":
-
-                # print_test(a)
-                # if self.frame_template == "with_img":
-                # lobby_frame = FrameWithImageSchema(
-                #     photo=photo,
-                #     reply_markup=self.__lobby_keyboardMarkup,
-                #     caption=caption,
-                #     parse_mode=parse_mode,
-                # )
+                self.frames.update(theater_data)
 
             # Se añaden los botones al `Keyboard`
             self.__lobby_keyboardMarkup.add(*buttons)
@@ -165,6 +185,7 @@ class TheaterHandler:
                 )
 
             return lobby_frame
+
         except FileNotFoundError as e:
             print_error_detail(
                 title=e.args[0]["caller"], details=[error_message, e.args[0]["reason"]]
