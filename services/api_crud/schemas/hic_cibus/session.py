@@ -7,3 +7,9 @@ class SessionInDB(BaseModel):
     worker_id: int
     main_message_id: int | None = None
     current_action: dict | None = None
+
+
+class SessionInDBUpdate(BaseModel):
+    worker_id: int | None = None
+    main_message_id: int | None = None
+    current_action: dict | None = None

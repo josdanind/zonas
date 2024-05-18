@@ -120,7 +120,7 @@ async def delete_bots(
     status_code=status.HTTP_200_OK,
     summary="Crear un bot",
 )
-async def delete_bots(
+async def insert_bots(
     userRequest: BotInDB,
     current_user: Annotated[crudUserModel, Depends(user_authorization)],
 ):
@@ -147,7 +147,7 @@ async def delete_bots(
     status_code=status.HTTP_200_OK,
     summary="Actualizar bot",
 )
-async def delete_bots(
+async def update_bots(
     id: int,
     userRequest: BotInDBUpdate,
     current_user: Annotated[crudUserModel, Depends(user_authorization)],
@@ -161,6 +161,8 @@ async def delete_bots(
             to_update["updated_at"] = datetime.now()
 
             await crud_manager.update(to_update, bot_id=id)
+            database_message(f"Bot actualizado")
+
     except TypeError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Se espera un json no vacio"

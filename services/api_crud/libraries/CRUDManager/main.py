@@ -217,8 +217,6 @@ class CRUDManager:
             ).values(**no_null_values)
 
             await self.db.execute(query)
-            database_message(f"Bot actualizado")
-
         except TypeError as err:
             print_error_message(err)
             raise
