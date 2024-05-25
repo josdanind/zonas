@@ -3,7 +3,12 @@ import os, inspect
 
 # pyTelegramBotAPI
 from telebot.async_telebot import AsyncTeleBot
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
+from telebot.types import (
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+    Message,
+    InputMediaPhoto,
+)
 from telebot.asyncio_helper import ApiTelegramException
 
 # aiohttp
@@ -33,6 +38,7 @@ class TheaterHandler:
         bot: AsyncTeleBot,
         theaters: list[TheaterSchema],
         path: str,
+        api_crud_url: str,
         text_box: dict,
         frame_template: str = "with_cover",
         row_width=1,
@@ -41,6 +47,7 @@ class TheaterHandler:
         self.bot = bot
         self.theaters = theaters
         self.path = path
+        self.api_crud = api_crud_url
         self.text_box = text_box
         self.frames = {}
         self.frame_template: str = self.__check_template(frame_template)
@@ -48,7 +55,30 @@ class TheaterHandler:
         self.lobby_frame = self.__create_lobby_frame()
         self.__main_msg_id: int = 0
 
-    def __create_theater_data(self, theater: TheaterSchema, row_width=1):
+    def __set_theater_frames(self, theater: TheaterSchema, row_width=1):
+        """
+        Reúne la data de todos los Frames que componen a un Theater. El Frame principal
+        (el "frontend" del Theater) se crea y se anexa al return del método.
+
+        Los Frames de las Galleries no se crean, pero los botones (galleries_buttons)
+        que erutan a cada gallery  sí. 'text' contiene la etiqueta que describe
+        su respectiva Gallery, y el 'callback_data' contiene el enlace a su respectivo Frame.
+
+        Si el Theater se configuró para no mostrar las 'galleries' (display_galleries=false)
+        el frame principal no será enviado, en su lugar, se envía el frame del 'atrium', en
+        muchas ocasiones solo se desea mostrar el 'Atrium'.
+
+        Args:
+            theater (TheaterSchema): Es un objeto 'Theater'
+            row_width (int, optional): No es funcional en esta versión.
+
+        Returns:
+            dict:
+                - 'frame' (FrameWithImageSchema): es el frame del Theater.
+                - 'display_galleries' (bool): 'true' para mostrar las 'galleries' en el frame del theater.
+                - 'atrium' (str): enlace para obtener el 'frame' del 'atrium'
+                - "galleries_buttons" (list): son botones que contienen el enlace de cada 'gallery' y del 'atrium'
+        """
         # * KEYBOARD
         keyboard = InlineKeyboardMarkup(row_width=row_width)
         buttons: list[InlineKeyboardButton] = []
@@ -109,10 +139,12 @@ class TheaterHandler:
         }
 
     def __create_lobby_frame(self):
-        """Crea el Frame del Lobby
+        """Crea el Frame del Lobby, éste, es el "frontend" del 'Frame Handler'.
+
+        El 'Lobby' expone cada 'Theater' que se incluye en el 'Frame Handler'.
 
         Returns:
-            frame: retorna un Frame y su Template se definió a partir del
+            frame: es un Frame y su Template se definió a partir del
             atributo `self.frame_template: str`
         """
         # Mensaje de error si no se crea el frame del lobby
@@ -162,9 +194,9 @@ class TheaterHandler:
                     )
                 )
 
-                theater_data = self.__create_theater_data(theater)
+                theater_frames = self.__set_theater_frames(theater)
 
-                self.frames.update(theater_data)
+                self.frames.update(theater_frames)
 
             # Se añaden los botones al `Keyboard`
             self.__lobby_keyboardMarkup.add(*buttons)
@@ -211,8 +243,6 @@ class TheaterHandler:
         error_title = "Se produjo un error al intentar enviar un frame"
 
         try:
-            msg: Message | None = None
-
             match frame.template_name:
                 case "whit_img":
                     msg = await self.bot.send_photo(
@@ -241,5 +271,39 @@ class TheaterHandler:
                 details=[e],
             )
 
-    async def get_frame(self, route: str):
-        pass
+    async def change_message(
+        self, chat_id: int, message_id: str, frame: FrameWithImageSchema
+    ):
+        error_title = "Se produjo un error al intentar modificar un mensaje"
+
+        try:
+            match frame.template_name:
+                case "whit_img":
+                    msg = await self.bot.edit_message_media(
+                        chat_id=chat_id,
+                        message_id=message_id,
+                        media=InputMediaPhoto(
+                            media=frame.photo,
+                            caption=frame.caption,
+                            parse_mode=frame.parse_mode,
+                        ),
+                        reply_markup=frame.reply_markup,
+                    )
+
+                    return msg
+        except ApiTelegramException as e:
+            if e.error_code == 400:
+                print_error_detail(
+                    title=error_title,
+                    details=[e.description],
+                )
+            else:
+                print_error_detail(
+                    title=error_title,
+                    details=["API Telegram error", e.description],
+                )
+        except Exception as e:
+            print_error_detail(
+                title=error_title,
+                details=[e],
+            )

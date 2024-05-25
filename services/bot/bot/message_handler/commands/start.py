@@ -1,39 +1,33 @@
 # Bot
-from ...config.bot import bot
-from telebot.types import Message, InputFile, InlineKeyboardButton, InlineKeyboardMarkup
+from telebot.types import Message
 
 # Environment variables
 from config import API_CRUD_URL
 
 # Utils
-from bot.utils import auth
+from bot.utils.bot_api import authenticate_user, update_session
 
-home_cover = "bot/assets/views/home/home.png"
-
-markup = InlineKeyboardMarkup(row_width=1)
-markup.add(
-    InlineKeyboardButton("Botón 1 Botón 1 Botón 1 Botón 1", callback_data="btn1")
-)
+from ...frame_handler.main import theater_handler
 
 
-def welcome_message(name=""):
-    name = f" {name}" if name else name
-    return f"<b><u>Hola{name}, bienvenido Tlaloc</u></b>"
+async def start_command(message: Message):
+    username = message.chat.username
+    chat_id = message.chat.id
 
-
-async def start_command(message: Message, args: list = []):
-    user = await auth.user_auth(message.chat.username)
+    user = await authenticate_user(username, chat_id)
 
     if user:
-        await bot.send_photo(
-            chat_id=message.chat.id,
-            photo=InputFile(home_cover),
-            caption="Bienvenidos a Tlaloc",
-            reply_markup=markup,
-        )
-    else:
-        print("No eres un usuario")
+        msg_id = await theater_handler.send_frame(theater_handler.lobby_frame, chat_id)
+        to_update = {"main_message_id": msg_id, "current_action": {"route": "/"}}
 
-    # name = " ".join(args)
-    # print(welcome_message())
-    # await bot.send_message(message.chat.id, welcome_message(name), parse_mode="HTML")
+        await update_session(user["session_id"], to_update)
+        # <TEST>
+        # key_to_exclude = "frame"
+        # frames = theater_handler.frames["orchards"]
+        # copy = {k: v for k, v in frames.items() if k != key_to_exclude}
+        # print(copy)
+        # </TEST>
+    else:
+        msg_id = await theater_handler.bot.send_message(
+            chat_id=chat_id, text=f"{username} no es un usuario registrado"
+        )
