@@ -9,6 +9,7 @@ from databases import Database
 
 # SQLAlchemy
 from sqlalchemy import Table, select, delete
+import sqlalchemy
 
 # library utilities
 from .utils import *
@@ -217,6 +218,15 @@ class CRUDManager:
             ).values(**no_null_values)
 
             await self.db.execute(query)
+
+            # Número de filas actualizadas
+            updated_rows = await self.db.execute(
+                self.db_table.select()
+                .where(eval(f"self.db_table.c.{c_name}") == c_value)
+                .with_only_columns([sqlalchemy.func.count()])
+            )
+
+            return updated_rows
         except TypeError as err:
             print_error_message(err)
             raise

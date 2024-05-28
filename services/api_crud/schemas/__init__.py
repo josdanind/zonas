@@ -11,5 +11,12 @@ from .hic_cibus.control_system import ControlSystemInDB
 from .hic_cibus.device import DeviceInDB
 from .hic_cibus.worker import WorkerInDB
 from .hic_cibus.crop_worker import CropWorkerInDB
-from .hic_cibus.session import SessionInDB, SessionInDBUpdate
+from .hic_cibus.session import (
+    SessionInDB,
+    SessionInDBUpdate,
+    RequestToUpdateSessionSchema,
+)
 from .hic_cibus.session_control_system import SessionControlSystemInDB
+
+# --// BOT Control
+from .hic_cibus.bot.auth import UserLoginSchema

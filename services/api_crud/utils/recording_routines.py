@@ -226,6 +226,7 @@ async def register_workers_sessions(crud_manager: CRUDManager, workers_data: dic
         await crud_manager.change_table(farmModel)
         exist = await crud_manager.verify_existence(**{"name": farm})
 
+        # ! Falta el else para manejar la excepción
         if exist:
             farm_id = exist.id
 
@@ -241,7 +242,9 @@ async def register_workers_sessions(crud_manager: CRUDManager, workers_data: dic
                     condition={"name": worker_schema.name},
                 )
 
-                session_schema = SessionInDB(worker_id=worker_schema.id)
+                session_schema = SessionInDB(
+                    worker_id=worker_schema.id, telegram_user=worker["telegram_user"]
+                )
                 await crud_manager.change_table(sessionModel)
 
                 exist = await crud_manager.verify_existence(worker_id=worker_schema.id)

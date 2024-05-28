@@ -1,8 +1,9 @@
 # Standard Library
 from typing import Annotated
+from datetime import datetime
 
 # FastAPI
-from fastapi import APIRouter, status, Path, HTTPException
+from fastapi import APIRouter, status, Path, HTTPException, Query
 
 # CRUDManager
 from libraries.CRUDManager import CRUDManager
@@ -11,10 +12,10 @@ from libraries.CRUDManager import CRUDManager
 from config import database_hic_cibus
 
 # Models
-from models import workerModel, sessionModel
+from models import sessionModel
 
 # Schemas
-from schemas import SessionInDBUpdate
+from schemas import UserLoginSchema, RequestToUpdateSessionSchema, SessionInDBUpdate
 
 router = APIRouter(prefix="/tlaloc", tags=["Tlaloc"])
 
@@ -22,33 +23,44 @@ router = APIRouter(prefix="/tlaloc", tags=["Tlaloc"])
 # ********************
 # * POST - Bot Login *
 # ********************
-@router.get(
-    path="/login/{username}",
+@router.post(
+    path="/login",
     status_code=status.HTTP_200_OK,
     summary="Autenticación de Usuarios",
 )
-async def bot_user_auth(username: Annotated[str, Path(title="Telegram Username")]):
-    crud_manager = CRUDManager(database_hic_cibus, workerModel)
+async def bot_user_auth(
+    userRequest: UserLoginSchema,
+):
+    username = userRequest.username
+    chat_id = userRequest.chat_id
 
-    query = f"""\
+    crud_manager = CRUDManager(database_hic_cibus, sessionModel)
+
+    query = """\
     SELECT
-        workers.id AS worker_id,
-        workers.chat_id,
-        workers.name,
         sessions.id AS session_id,
         sessions.main_message_id,
-        sessions.current_action
+        sessions.current_action,
+        sessions.chat_id,
+        workers.id AS worker_id,
+        workers.name
     FROM
-        workers
+        sessions
     JOIN
-        sessions ON workers.id = sessions.worker_id
+        workers ON sessions.worker_id = workers.id
     WHERE
-        workers.telegram_user = '{username}';
+        sessions.telegram_user = :username;
     """
 
-    user = await crud_manager.db.fetch_one(query)
+    user = await crud_manager.db.fetch_one(query, {"username": username})
 
     if user:
+        if not user.chat_id:
+            to_update = SessionInDBUpdate(chat_id=chat_id).model_dump(exclude_none=True)
+            to_update["updated_at"] = datetime.now()
+
+            await crud_manager.update(to_update, telegram_user=username)
+
         return {
             "worker_id": user.worker_id,
             "chat_id": user.chat_id,
@@ -70,8 +82,13 @@ async def bot_user_auth(username: Annotated[str, Path(title="Telegram Username")
     status_code=status.HTTP_200_OK,
     summary="Administra las sesiones de los usuarios",
 )
-async def update_worker_session(session_id: int, userRequest: SessionInDBUpdate):
+async def update_worker_session(userRequest: RequestToUpdateSessionSchema):
     crud_manager = CRUDManager(database_hic_cibus, sessionModel)
-    exists = await crud_manager.verify_existence(id=session_id)
 
-    # crud_manager.verify_existence(telegram_user=username)
+    session_id = userRequest.session_id
+    to_update = userRequest.session_table.model_dump(exclude_none=True)
+    to_update["updated_at"] = datetime.now()
+
+    result = await crud_manager.update(to_update, id=session_id)
+
+    return result

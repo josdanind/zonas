@@ -68,7 +68,7 @@ async def sign_up_hic_cibus() -> None:
 
         # Registra los trabajadores y crea sus respectivas sesiones
         with open("db_init/hic-cibus/workers.json", "r") as file:
-            workers_data = json.load(file)
+            workers_data: dict = json.load(file)
             await register_workers_sessions(crud_manager, workers_data)
 
         del crud_manager
