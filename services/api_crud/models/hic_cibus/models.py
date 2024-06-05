@@ -175,28 +175,24 @@ def createSessionControlSystemModel(metadata: MetaData) -> Table:
     )
 
 
-# ************
-# * Actuador *
-# ************
-def createActuatorModel(metadata: MetaData) -> Table:
+#! MODIFICADO
+# ***************
+# * Controlador *
+# ***************
+def createControllerModel(metadata: MetaData) -> Table:
     return Table(
-        "actuators",
+        "controllers",
         metadata,
         Column("id", Integer, primary_key=True),
-        Column(
-            "control_system_id",
-            Integer,
-            ForeignKey("control_systems.id"),
-        ),
         Column("uuid", String(10), nullable=False),
-        Column("ref", String(100), nullable=False),
-        Column("control_type", String(100), nullable=False),
+        Column("control_system_id", Integer, ForeignKey("control_systems.id")),
+        Column("device", String(50), nullable=False),
         Column("description", TEXT),
-        Column("categories", ARRAY(String), nullable=False),
         Column("data", JSON),
-        Column("created_at", DateTime, default=func.now()),
-        Column("updated_at", DateTime),
     )
+
+
+#! --//
 
 
 # **********
@@ -207,14 +203,36 @@ def createSensorModel(metadata: MetaData) -> Table:
         "sensors",
         metadata,
         Column("id", Integer, primary_key=True),
+        Column("uuid", String(10), nullable=False),
         Column(
-            "control_system_id",
+            "controller_id",
             Integer,
-            ForeignKey("control_systems.id"),
+            ForeignKey("controllers.id"),
+        ),
+        Column("ref", String(100), nullable=False),
+        Column("description", TEXT),
+        Column("quantity", ARRAY(String), nullable=False),
+        Column("data", JSON),
+        Column("created_at", DateTime, default=func.now()),
+        Column("updated_at", DateTime),
+    )
+
+
+# ************
+# * Actuador *
+# ************
+def createActuatorModel(metadata: MetaData) -> Table:
+    return Table(
+        "actuators",
+        metadata,
+        Column("id", Integer, primary_key=True),
+        Column(
+            "controller_id",
+            Integer,
+            ForeignKey("controllers.id"),
         ),
         Column("uuid", String(10), nullable=False),
         Column("ref", String(100), nullable=False),
-        Column("control_type", String(100), nullable=False),
         Column("description", TEXT),
         Column("categories", ARRAY(String), nullable=False),
         Column("data", JSON),

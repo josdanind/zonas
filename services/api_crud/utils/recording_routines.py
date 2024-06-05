@@ -20,11 +20,13 @@ from schemas import (
     FarmInDB,
     CropInDB,
     ControlSystemInDB,
-    DeviceInDB,
     WorkerInDB,
     CropWorkerInDB,
     SessionInDB,
     SessionControlSystemInDB,
+    ControllerInDB,
+    SensorInDB,
+    ActuatorInDB,
 )
 
 
@@ -37,6 +39,7 @@ from models import (
     farmModel,
     cropModel,
     controlSystemModel,
+    controllerModel,
     sensorModel,
     actuatorModel,
     workerModel,
@@ -99,21 +102,41 @@ async def create_record(crud_manager: CRUDManager, schema: BaseModel, condition:
     return id
 
 
-# ! Se debe mejorar el manejo de  excepciones
-async def register_device(
-    crud_manager: CRUDManager, devices_data: json, control_system_id: int
+async def register_sensor(
+    crud_manager: CRUDManager, sensors_data: dict, controller_id: int
 ):
-    for device_data in devices_data:
-        device = devices_data[device_data]
-        device["control_system_id"] = control_system_id
+    for sensor_data in sensors_data:
+        sensor = sensors_data[sensor_data]
+        sensor["controller_id"] = controller_id
 
-        for i in range(device["amount"]):
-            uuid = device["uuids"][i]
-            device_i = device | {"uuid": uuid}
-            schema = DeviceInDB(**device_i)
+        for i in range(sensor["amount"]):
+            uuid = sensor["uuids"][i]
+            sensor_i = sensor | {"uuid": uuid}
+            sensor_i_schema = SensorInDB(**sensor_i)
 
-            schema.id = await create_record(
-                crud_manager=crud_manager, schema=schema, condition={"uuid": uuid}
+            sensor_i_schema.id = await create_record(
+                crud_manager=crud_manager,
+                schema=sensor_i_schema,
+                condition={"uuid": uuid},
+            )
+
+
+async def register_actuator(
+    crud_manager: CRUDManager, actuators_data: dict, controller_id: int
+):
+    for actuator_data in actuators_data:
+        actuator = actuators_data[actuator_data]
+        actuator["controller_id"] = controller_id
+
+        for i in range(actuator["amount"]):
+            uuid = actuator["uuids"][i]
+            actuator_i = actuator | {"uuid": uuid}
+            actuator_i_schema = ActuatorInDB(**actuator_i)
+
+            actuator_i_schema.id = await create_record(
+                crud_manager=crud_manager,
+                schema=actuator_i_schema,
+                condition={"uuid": uuid},
             )
 
 
@@ -193,26 +216,46 @@ async def register_crop_control_system(crud_manager: CRUDManager, crops_data: di
                     condition={"uuid": control_system_schema.uuid},
                 )
 
-                # Initialize sensors
-                sensors = control_system["sensors"]
+                # Initialize controllers
+                controllers = control_system["controllers"]
 
-                await crud_manager.change_table(sensorModel)
-                await register_device(
-                    crud_manager=crud_manager,
-                    devices_data=sensors,
-                    control_system_id=control_system_schema.id,
-                )
+                for uuid in controllers:
+                    controller: dict = controllers[uuid]
+                    controller["uuid"] = uuid
+                    controller["control_system_id"] = control_system_schema.id
+                    controller_schema = ControllerInDB(**controller)
 
-                # Initialize actuators
-                actuators = control_system["actuators"]
+                    await crud_manager.change_table(controllerModel)
 
-                await crud_manager.change_table(actuatorModel)
-                await register_device(
-                    crud_manager=crud_manager,
-                    devices_data=actuators,
-                    control_system_id=control_system_schema.id,
-                )
+                    controller_schema.id = await create_record(
+                        crud_manager=crud_manager,
+                        schema=controller_schema,
+                        condition={"uuid": controller_schema.uuid},
+                    )
 
+                    # Initialize sensors
+                    sensors = controller.get("sensors")
+
+                    if sensors:
+                        await crud_manager.change_table(sensorModel)
+
+                        await register_sensor(
+                            crud_manager=crud_manager,
+                            sensors_data=sensors,
+                            controller_id=controller_schema.id,
+                        )
+
+                    # Initialize actuators
+                    actuators = controller.get("actuators")
+
+                    if actuators:
+                        await crud_manager.change_table(actuatorModel)
+
+                        await register_actuator(
+                            crud_manager=crud_manager,
+                            actuators_data=actuators,
+                            controller_id=controller_schema.id,
+                        )
         else:
             crud_output(f"The {farm} farm does not exist")
 

@@ -12,6 +12,7 @@ from .hic_cibus.models import (
     createCropWorkerModel,
     createControlSystemModel,
     createSessionControlSystemModel,
+    createControllerModel,
     createActuatorModel,
     createSensorModel,
     createCrudUser,
@@ -30,5 +31,6 @@ crop_workerModel = createCropWorkerModel(metadata_hic_cibus)
 sessionModel = createSessionModel(metadata_hic_cibus)
 controlSystemModel = createControlSystemModel(metadata_hic_cibus)
 sessions_control_systemModel = createSessionControlSystemModel(metadata_hic_cibus)
+controllerModel = createControllerModel(metadata_hic_cibus)
 actuatorModel = createActuatorModel(metadata_hic_cibus)
 sensorModel = createSensorModel(metadata_hic_cibus)

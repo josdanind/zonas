@@ -8,9 +8,11 @@ from .hic_cibus.company import CompanyInDB
 from .hic_cibus.farm import FarmInDB
 from .hic_cibus.crop import CropInDB
 from .hic_cibus.control_system import ControlSystemInDB
-from .hic_cibus.device import DeviceInDB
 from .hic_cibus.worker import WorkerInDB
 from .hic_cibus.crop_worker import CropWorkerInDB
+from .hic_cibus.controller import ControllerInDB
+from .hic_cibus.sensor import SensorInDB
+from .hic_cibus.actuator import ActuatorInDB
 from .hic_cibus.session import (
     SessionInDB,
     SessionInDBUpdate,

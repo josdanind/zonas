@@ -1,13 +1,11 @@
 # Pydantic
 from pydantic import BaseModel
-from uuid import UUID
 
 
-class ControlSystemInDB(BaseModel):
+class ControllerInDB(BaseModel):
     id: int | None = None
-    crop_id: int
-    uuid: UUID
+    uuid: str
+    control_system_id: int
     device: str
     description: str
-    categories: list[str]
     data: dict
