@@ -18,3 +18,4 @@ class TheaterSchema(BaseModel):
     atrium: GallerySchema
     galleries: list[GallerySchema]
     display_galleries: bool = False
+    frame_template: str

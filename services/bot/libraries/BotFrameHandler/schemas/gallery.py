@@ -2,13 +2,13 @@
 from pydantic import BaseModel
 
 
-class GalleryFrameSchema(BaseModel):
+class FrameDataSchema(BaseModel):
     template: str
     data: dict
     query: dict
 
 
-class GalleryWrapperSchema(GalleryFrameSchema):
+class FrameDataWrapperSchema(FrameDataSchema):
     back_button: bool = True
     gallery_button: bool = False
     home_button: bool = False
@@ -16,5 +16,5 @@ class GalleryWrapperSchema(GalleryFrameSchema):
 
 class GallerySchema(BaseModel):
     name: str
-    frame: GalleryWrapperSchema
+    frame: FrameDataWrapperSchema
     selfButtonLabel: str

@@ -15,7 +15,7 @@ from telebot.asyncio_helper import ApiTelegramException
 import aiohttp
 
 # Schemas
-from .schemas import TheaterSchema, FrameWithImageSchema
+from .schemas import TheaterSchema,  FrameSchema
 
 # Utils - BotFrameHandler
 from libraries.BotFrameHandler.utils import (
@@ -25,9 +25,6 @@ from libraries.BotFrameHandler.utils import (
     print_error_detail,
     print_test,
 )
-
-from libraries.BotFrameHandler.utils.exeptions import TheaterError
-
 
 class TheaterHandler:
     __templates = ["with_cover"]
@@ -41,7 +38,6 @@ class TheaterHandler:
         api_crud_url: str,
         text_box: dict,
         frame_template: str = "with_cover",
-        row_width=1,
     ) -> None:
         self,
         self.bot = bot
@@ -51,36 +47,43 @@ class TheaterHandler:
         self.text_box = text_box
         self.frames = {}
         self.frame_template: str = self.__check_template(frame_template)
-        self.__lobby_keyboardMarkup = InlineKeyboardMarkup(row_width=row_width)
+        self.__lobby_keyboardMarkup = self.__set_keyboard(frame_template)
         self.lobby_frame = self.__create_lobby_frame()
-        self.__main_msg_id: int = 0
 
-    def __set_theater_frames(self, theater: TheaterSchema, row_width=1):
+    def __set_keyboard(self, frame_template: str) -> InlineKeyboardMarkup:
+        # *Verifica si es un template válido
+        template = self.__check_template(frame_template)
+
+        match template:
+            case "with_cover":
+                return InlineKeyboardMarkup(row_width=1)
+
+    def __set_theater_frames(self, theater: TheaterSchema):
         """
         Reúne la data de todos los Frames que componen a un Theater. El Frame principal
-        (el "frontend" del Theater) se crea y se anexa al return del método.
+        (el "frontend" del Theater) se crea y se anexa a la key "frame" del diccionario
+        que retorna este método.
 
         Los Frames de las Galleries no se crean, pero los botones (galleries_buttons)
-        que erutan a cada gallery  sí. 'text' contiene la etiqueta que describe
+        que erutan a hacia cada gallery, sí. 'text' contiene la etiqueta que describe
         su respectiva Gallery, y el 'callback_data' contiene el enlace a su respectivo Frame.
 
         Si el Theater se configuró para no mostrar las 'galleries' (display_galleries=false)
-        el frame principal no será enviado, en su lugar, se envía el frame del 'atrium', en
-        muchas ocasiones solo se desea mostrar el 'Atrium'.
+        el frame principal (el del Theater) no será enviado, en su lugar, se envía el frame
+        del 'Atrium', en muchas ocasiones solo se desea mostrar el 'Atrium'.
 
         Args:
             theater (TheaterSchema): Es un objeto 'Theater'
-            row_width (int, optional): No es funcional en esta versión.
 
         Returns:
             dict:
-                - 'frame' (FrameWithImageSchema): es el frame del Theater.
+                - 'frame' (FrameSchema): es el frame del Theater.
                 - 'display_galleries' (bool): 'true' para mostrar las 'galleries' en el frame del theater.
                 - 'atrium' (str): enlace para obtener el 'frame' del 'atrium'
                 - "galleries_buttons" (list): son botones que contienen el enlace de cada 'gallery' y del 'atrium'
         """
         # * KEYBOARD
-        keyboard = InlineKeyboardMarkup(row_width=row_width)
+        keyboard = self.__set_keyboard(theater.frame_template)
         buttons: list[InlineKeyboardButton] = []
 
         # * ATRIUM BUTTON
@@ -125,8 +128,8 @@ class TheaterHandler:
         # * CAPTION
         caption = f"<b>{theater.billboard}</b>"
 
-        frame = FrameWithImageSchema(
-            photo=photo, reply_markup=keyboard, caption=caption, parse_mode="HTML"
+        frame = FrameSchema(
+            cover=photo, reply_markup=keyboard, caption=caption, parse_mode="HTML"
         )
 
         return {
@@ -152,38 +155,38 @@ class TheaterHandler:
         # str: Path del Cover del lobby
         cover_path = os.path.join(self.path, self.__cover_path)
         # bytes: contendrá la imagen del Cover
-        photo: bytes = b""
+        cover: bytes | None = b""
 
         try:
-            # *Lobby Photo
+            # *Lobby Cover
             check_file(cover_path)
             with open(cover_path, mode="rb") as img:
-                photo = img.read()
+                cover = img.read()
 
             # *Lobby Keyboard
             # --Buttons list
             buttons: list[InlineKeyboardButton] = []
 
-            # En este ciclo for se crea los botones que se exponen en el Lobby,
-            # cada botón es un enlace hacia un Theater:
+            # *Este ciclo "for" crea los botones que se exponen en el Lobby,
+            # *cada botón es un enlace hacia un Theater
             for theater in self.theaters:
-                if not theater:
-                    raise TheaterError(
-                        message=self.__class__.__name__,
-                        details=[
-                            inspect.currentframe().f_code.co_name,
-                            "Theater no valido",
-                        ],
-                    )
+                # *Verifica si el elemento de la lista es un Theater
+                if not isinstance(theater, TheaterSchema) :
+                    print_error_detail(title=error_message, details=[
+                        inspect.currentframe().f_code.co_name,
+                        "Theater no valido",
+                    ])
+
+                    continue
 
                 theater_id: str = theater.id
                 billboard: str = theater.billboard
 
-                # *Define en el callback_data de cada botón del theater respectivo
+                # *Define en el callback_data de cada botón el enlace hacia theater respectivo
                 # *si se va al atrium directamente o se muestran todas las galerías
                 display_galleries: bool = theater.display_galleries
 
-                # Define su se muestran todas las galerías o solo el Atrium
+                # Define si se muestran todas las galerías o solo el Atrium
                 theater_callback_data = (
                     f'@{theater_id}://{"galleries" if display_galleries else "atrium"}'
                 )
@@ -202,15 +205,20 @@ class TheaterHandler:
             self.__lobby_keyboardMarkup.add(*buttons)
 
             # *Se Define el `caption` del frame
+            # --// Title
             title = self.text_box["title"]
+            # --// Description
             description = self.text_box["description"]
+            # --// Caption
             caption = f"<b>{title}</b>\n\n{description}"
+
+            # *Se define el parse_mode
             parse_mode = "HTML"
 
-            # *Se crea el  Frame
+            # *Se crea el Frame
             if self.frame_template == "with_cover":
-                lobby_frame = FrameWithImageSchema(
-                    photo=photo,
+                lobby_frame = FrameSchema(
+                    cover=cover,
                     reply_markup=self.__lobby_keyboardMarkup,
                     caption=caption,
                     parse_mode=parse_mode,
@@ -222,8 +230,6 @@ class TheaterHandler:
             print_error_detail(
                 title=e.args[0]["caller"], details=[error_message, e.args[0]["reason"]]
             )
-        except TheaterError as e:
-            print_error_detail(title=e, details=e.details)
         except Exception as err:
             print("ERROR: ", err)
 
@@ -238,16 +244,16 @@ class TheaterHandler:
         except ValueError as err:
             print_error_message(err)
 
-    async def send_frame(self, frame: FrameWithImageSchema, chat_id: int):
+    async def send_frame(self, frame: FrameSchema, chat_id: int):
         msg: Message | None = None
         error_title = "Se produjo un error al intentar enviar un frame"
 
         try:
-            match frame.template_name:
-                case "whit_img":
+            match frame.frame_template:
+                case "with_cover":
                     msg = await self.bot.send_photo(
                         chat_id=chat_id,
-                        photo=frame.photo,
+                        photo=frame.cover,
                         reply_markup=frame.reply_markup,
                         caption=frame.caption,
                         parse_mode=frame.parse_mode,
@@ -272,18 +278,18 @@ class TheaterHandler:
             )
 
     async def change_message(
-        self, chat_id: int, message_id: str, frame: FrameWithImageSchema
+        self, chat_id: int, message_id: str, frame: FrameSchema
     ):
         error_title = "Se produjo un error al intentar modificar un mensaje"
 
         try:
-            match frame.template_name:
-                case "whit_img":
+            match frame.frame_template:
+                case "with_cover":
                     msg = await self.bot.edit_message_media(
                         chat_id=chat_id,
                         message_id=message_id,
                         media=InputMediaPhoto(
-                            media=frame.photo,
+                            media=frame.cover,
                             caption=frame.caption,
                             parse_mode=frame.parse_mode,
                         ),

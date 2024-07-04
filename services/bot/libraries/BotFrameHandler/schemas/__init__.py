@@ -1,5 +1,5 @@
 from .theater import TheaterSchema
-from .templates import FrameWithImageSchema
+from .frames import FrameSchema, FrameWithCoverSchema
 from .container import ContainerSchema
 from .view import ViewSchema
-from .gallery import GalleryWrapperSchema, GallerySchema
+from .gallery import FrameDataWrapperSchema, GallerySchema
