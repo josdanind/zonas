@@ -45,19 +45,26 @@ async def redirect_to_frame_button(call: CallbackQuery):
         username = call.from_user.username
 
         user = await authenticate_user(username, chat_id)
-
         theater = re.search(r"@(.*?)://", call.data).group(1)
         gallery = re.search(r"://(.*?)$", call.data).group(1)
 
-        if gallery == "galleries":
-            lobby_frame = theater_handler.frames[theater]["frame"]
-            await theater_handler.change_message(
-                chat_id=chat_id, message_id=user["main_message_id"], frame=lobby_frame
-            )
+        theater_data = theater_handler.frames[theater]
 
-            to_update = {"current_action": {"route": f"/{theater}"}}
-            await update_session(user["session_id"], to_update)
-            # await theater_handler.send_frame(lobby_frame, chat_id)
+        match gallery:
+            case "galleries":
+                lobby_frame = theater_data["frame"]
+                await theater_handler.change_message(
+                    chat_id=chat_id, message_id=user["main_message_id"], frame=lobby_frame
+                )
+
+                to_update = {"current_action": {"route": f"/{theater}"}}
+                await update_session(user["session_id"], to_update)
+            case "atrium":
+                atrium = theater_data["galleries"]["atrium"]
+                atrium_link = atrium["link"]
+                atrium_query = atrium["query"]
+            case _:
+                pass
 
         await bot.answer_callback_query(call.id)
     except Exception as e:

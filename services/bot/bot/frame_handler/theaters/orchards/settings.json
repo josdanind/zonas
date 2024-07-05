@@ -22,8 +22,8 @@
                 }
             },
             "query": {
-                "key": "SQL_query",
-                "value": "all"
+                "key": "gallery",
+                "value": "atrium"
             }
         }
     },
@@ -41,7 +41,7 @@
                     }
                 },
                 "query": {
-                    "key": "SQL_query",
+                    "key": "gallery",
                     "value": "categories"
                 }
             }

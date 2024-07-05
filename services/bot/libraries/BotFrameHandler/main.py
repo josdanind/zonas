@@ -85,23 +85,47 @@ class TheaterHandler:
         # * KEYBOARD
         keyboard = self.__set_keyboard(theater.frame_template)
         buttons: list[InlineKeyboardButton] = []
+        galleries = {}
 
-        # * ATRIUM BUTTON
+        # * ATRIUM
+        # * Button
         atrium = theater.atrium
         atrium_frame = atrium.frame
+        atrium_link = f"@{theater.id}://atrium"
+
         atrium_button: InlineKeyboardButton = InlineKeyboardButton(
-            text=atrium.selfButtonLabel, callback_data=f"@{theater.id}://atrium"
+            text=atrium.selfButtonLabel, callback_data=atrium_link
+        )
+
+        galleries.update(
+            {
+                "atrium": {
+                    "link": atrium_link,
+                    "query": atrium_frame.query
+                }
+            }
         )
 
         # * GALLERIES BUTTONS
         gallery_buttons: list[InlineKeyboardButton] = []
+
         for gallery in theater.galleries:
+            gallery_link = f"@{theater.id}://{gallery.name}"
             button = {
                 "text": gallery.selfButtonLabel,
-                "callback_data": f"@{theater.id}://{gallery.name}",
+                "callback_data": gallery_link,
             }
 
             gallery_buttons.append(InlineKeyboardButton(**button))
+
+            galleries.update(
+                {
+                    gallery.name: {
+                        "link": gallery_link,
+                        "query": gallery.frame.query
+                    }
+                }
+            )
 
         # * COVER
         atrium_cover_path = atrium_frame.data["cover"]
@@ -136,7 +160,7 @@ class TheaterHandler:
             f"{theater.id}": {
                 "frame": frame,
                 "display_galleries": theater.display_galleries,
-                "atrium": f"@{theater.id}://atrium",
+                "galleries": galleries,
                 "galleries_buttons": gallery_buttons,
             }
         }
