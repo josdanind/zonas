@@ -11,7 +11,7 @@ from sqlalchemy import (
     Boolean,
 )
 
-from sqlalchemy.dialects.postgresql import JSON, ARRAY, TEXT, BYTEA, UUID
+from sqlalchemy.dialects.postgresql import JSON, ARRAY, TEXT, BYTEA, UUID, BOOLEAN
 
 # from geoalchemy2 import Geography
 
@@ -76,7 +76,7 @@ def createCropModel(metadata: MetaData) -> Table:
         Column("id", Integer, primary_key=True),
         Column("farm_id", Integer, ForeignKey("farms.id")),
         Column("crop", String(100), nullable=False),
-        Column("crop_plot", String(50), nullable=False),
+        Column("crop_plot", String(50), unique=True, nullable=False),
         Column("is_active", Boolean, default=True),
         Column("seedtime", Date),
         Column("harvest_dates", ARRAY(Date)),
@@ -156,6 +156,7 @@ def createControlSystemModel(metadata: MetaData) -> Table:
         Column("device", String(100), nullable=False),
         Column("description", TEXT),
         Column("categories", ARRAY(String), nullable=False),
+        Column("frame", JSON, nullable=False),
         Column("data", JSON),
         Column("created_at", DateTime, default=func.now()),
         Column("updated_at", DateTime),
@@ -175,7 +176,6 @@ def createSessionControlSystemModel(metadata: MetaData) -> Table:
     )
 
 
-#! MODIFICADO
 # ***************
 # * Controlador *
 # ***************
@@ -190,10 +190,6 @@ def createControllerModel(metadata: MetaData) -> Table:
         Column("description", TEXT),
         Column("data", JSON),
     )
-
-
-#! --//
-
 
 # **********
 # * Sensor *
@@ -217,6 +213,22 @@ def createSensorModel(metadata: MetaData) -> Table:
         Column("updated_at", DateTime),
     )
 
+# ***************
+# * Sensor Data *
+# ***************
+def createSensorDataModel(metadata: MetaData) -> Table:
+    return Table(
+        "sensors_data",
+        metadata,
+        Column("id", Integer, primary_key=True),
+        Column(
+            "sensor_id",
+            Integer,
+            ForeignKey("sensors.id"),
+        ),
+        Column("timestamp", DateTime, nullable=False),
+        Column("data", JSON),
+    )
 
 # ************
 # * Actuador *
@@ -238,4 +250,22 @@ def createActuatorModel(metadata: MetaData) -> Table:
         Column("data", JSON),
         Column("created_at", DateTime, default=func.now()),
         Column("updated_at", DateTime),
+    )
+
+
+# *****************
+# * Actuator Data *
+# *****************
+def createActuatorDataModel(metadata: MetaData) -> Table:
+    return Table(
+        "actuators_data",
+        metadata,
+        Column("id", Integer, primary_key=True),
+        Column(
+            "sensor_id",
+            Integer,
+            ForeignKey("sensors.id"),
+        ),
+        Column("timestamp", DateTime, nullable=False),
+        Column("data", JSON),
     )

@@ -14,11 +14,12 @@ from .hic_cibus.controller import ControllerInDB
 from .hic_cibus.sensor import SensorInDB
 from .hic_cibus.actuator import ActuatorInDB
 from .hic_cibus.session import (
-    SessionInDB,
-    SessionInDBUpdate,
+    SessionInDBSchema,
+    SessionInDBUpdateSchema,
     RequestToUpdateSessionSchema,
 )
 from .hic_cibus.session_control_system import SessionControlSystemInDB
 
 # --// BOT Control
 from .hic_cibus.bot.auth import UserLoginSchema
+from .hic_cibus.bot.query_frame import QueryFrameSchema

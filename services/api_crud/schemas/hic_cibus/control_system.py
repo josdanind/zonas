@@ -10,4 +10,5 @@ class ControlSystemInDB(BaseModel):
     device: str
     description: str
     categories: list[str]
+    frame: dict
     data: dict

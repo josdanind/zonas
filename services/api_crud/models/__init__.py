@@ -16,6 +16,8 @@ from .hic_cibus.models import (
     createActuatorModel,
     createSensorModel,
     createCrudUser,
+    createSensorDataModel,
+    createActuatorDataModel
 )
 
 # Bots
@@ -34,3 +36,5 @@ sessions_control_systemModel = createSessionControlSystemModel(metadata_hic_cibu
 controllerModel = createControllerModel(metadata_hic_cibus)
 actuatorModel = createActuatorModel(metadata_hic_cibus)
 sensorModel = createSensorModel(metadata_hic_cibus)
+sensorDataModel = createSensorDataModel(metadata_hic_cibus)
+actuatorDataModel = createActuatorDataModel(metadata_hic_cibus)

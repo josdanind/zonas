@@ -22,7 +22,7 @@ from schemas import (
     ControlSystemInDB,
     WorkerInDB,
     CropWorkerInDB,
-    SessionInDB,
+    SessionInDBSchema,
     SessionControlSystemInDB,
     ControllerInDB,
     SensorInDB,
@@ -285,7 +285,7 @@ async def register_workers_sessions(crud_manager: CRUDManager, workers_data: dic
                     condition={"name": worker_schema.name},
                 )
 
-                session_schema = SessionInDB(
+                session_schema = SessionInDBSchema(
                     worker_id=worker_schema.id, telegram_user=worker["telegram_user"]
                 )
                 await crud_manager.change_table(sessionModel)
