@@ -42,12 +42,6 @@ def create_TheaterSchema(container_path: Path) -> TheaterSchema:
         # -- Atrium
         atrium_data = settings["atrium"]
         atrium_frame_data = atrium_data["frame_data"]
-        atrium_cover = os.path.join(container_path, atrium_frame_data["data"]["cover"])
-
-        # Comprueba la existencia del cover
-        check_file(atrium_cover)
-
-        atrium_frame_data["data"]["cover"] = atrium_cover
 
         atrium = GallerySchema(
             name="atrium",
@@ -59,11 +53,6 @@ def create_TheaterSchema(container_path: Path) -> TheaterSchema:
 
         for gallery in settings["galleries"]:
             gallery_frame_data = gallery["frame_data"]
-            gallery_cover = os.path.join(container_path, gallery_frame_data["data"]["cover"])
-
-            check_file(gallery_cover)
-
-            gallery_frame_data["data"]["cover"] = gallery_cover
 
             galleries.append(
                 GallerySchema(

@@ -1,5 +1,5 @@
 {
-    "version": "0.1",
+    "version": "0.2.0",
     "id": "orchards",
     "billboard": "Huertas",
     "settings": {
@@ -15,7 +15,7 @@
         "frame_data": {
             "template": "with_cover",
             "data": {
-                "cover": "img/atrium.png",
+                "cover": "https://imgur.com/9Ng2xrK",
                 "text_box": {
                     "title": "Huertas Activas",
                     "description": "Seleccione la huerta de tu interés"
@@ -34,7 +34,7 @@
             "frame_data": {
                 "template": "with_cover",
                 "data": {
-                    "cover": "img/categories.png",
+                    "cover": "https://imgur.com/9Ng2xrK",
                     "text_box": {
                         "title": "Categorías",
                         "description": "Por favor, seleccione una categoría para filtrar las huertas"

@@ -101,7 +101,9 @@ class TheaterHandler:
             {
                 "atrium": {
                     "link": atrium_link,
-                    "query": atrium_frame.query
+                    "query": atrium_frame.query,
+                    "cover": atrium_frame.data["cover"],
+                    "text_box": atrium_frame.data["text_box"],
                 }
             }
         )
@@ -122,17 +124,12 @@ class TheaterHandler:
                 {
                     gallery.name: {
                         "link": gallery_link,
-                        "query": gallery.frame.query
+                        "query": gallery.frame.query,
+                        "cover": gallery.frame.data["cover"],
+                        "text_box": atrium_frame.data["text_box"],
                     }
                 }
             )
-
-        # * COVER
-        atrium_cover_path = atrium_frame.data["cover"]
-        check_file(atrium_cover_path)
-
-        with open(atrium_cover_path, mode="rb") as img:
-            photo = img.read()
 
         # * Creating the keyboard
         buttons.append(atrium_button)
@@ -153,7 +150,7 @@ class TheaterHandler:
         caption = f"<b>{theater.billboard}</b>"
 
         frame = FrameSchema(
-            cover=photo, reply_markup=keyboard, caption=caption, parse_mode="HTML"
+            cover=atrium_frame.data["cover"], reply_markup=keyboard, caption=caption, parse_mode="HTML"
         )
 
         return {
@@ -162,6 +159,7 @@ class TheaterHandler:
                 "display_galleries": theater.display_galleries,
                 "galleries": galleries,
                 "galleries_buttons": gallery_buttons,
+                "container_path": theater.container.endpoint_path
             }
         }
 

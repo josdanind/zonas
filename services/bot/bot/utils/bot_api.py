@@ -7,6 +7,16 @@ import aiohttp
 # FROM
 from libraries.BotFrameHandler.utils import print_test
 
+async def get_buttons(container_url:str, link:str, query: dict, farm_id:int):
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url=container_url, json=query | {"link": link, "farm_id": farm_id}) as resp:
+            frame_data = await resp.json()
+
+            if resp.status == 200:
+                return frame_data
+            else:
+                return None
+
 
 async def authenticate_user(username: str, chat_id: int):
     async with aiohttp.ClientSession() as session:
