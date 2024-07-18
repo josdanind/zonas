@@ -29,6 +29,7 @@ from libraries.BotFrameHandler.utils import (
 class TheaterHandler:
     __templates = ["with_cover"]
     __cover_path = "img/lobby.png"
+    __update_session_endpoint = "/update_session"
 
     def __init__(
         self,
@@ -43,12 +44,26 @@ class TheaterHandler:
         self.bot = bot
         self.theaters = theaters
         self.path = path
-        self.api_crud = api_crud_url
+        self.api_crud_url = api_crud_url
         self.text_box = text_box
         self.frames = {}
         self.frame_template: str = self.__check_template(frame_template)
         self.__lobby_keyboardMarkup = self.__set_keyboard(frame_template)
         self.lobby_frame = self.__create_lobby_frame()
+
+    async def __update_session(self, session_id: int, to_update: dict):
+        async with aiohttp.ClientSession() as session:
+            url = self.api_crud_url + self.__update_session_endpoint
+            payload = {"session_id": session_id, "session_table": to_update}
+
+            async with session.put(url=url, json=payload) as resp:
+                user = await resp.json()
+
+                if resp.status == 200:
+                    return user
+                else:
+                    return None
+
 
     def __set_keyboard(self, frame_template: str) -> InlineKeyboardMarkup:
         # *Verifica si es un template válido
@@ -300,7 +315,7 @@ class TheaterHandler:
             )
 
     async def change_message(
-        self, chat_id: int, message_id: str, frame: FrameSchema
+        self, chat_id: int, user: dict, frame: FrameSchema, frame_route: str
     ):
         error_title = "Se produjo un error al intentar modificar un mensaje"
 
@@ -309,13 +324,18 @@ class TheaterHandler:
                 case "with_cover":
                     msg = await self.bot.edit_message_media(
                         chat_id=chat_id,
-                        message_id=message_id,
+                        message_id=user["main_message_id"],
                         media=InputMediaPhoto(
                             media=frame.cover,
                             caption=frame.caption,
                             parse_mode=frame.parse_mode,
                         ),
                         reply_markup=frame.reply_markup,
+                    )
+
+                    await self.__update_session(
+                        session_id=user["session_id"],
+                        to_update={"current_action": {"route": frame_route}}
                     )
 
                     return msg
