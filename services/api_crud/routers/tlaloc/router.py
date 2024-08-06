@@ -1,5 +1,5 @@
 # FastAPI
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Query
 
 # Schemas
 from schemas import UserLoginSchema, RequestToUpdateSessionSchema, QueryFrameSchema
@@ -22,10 +22,10 @@ router = APIRouter(prefix="/tlaloc", tags=["Tlaloc"])
     status_code=status.HTTP_200_OK,
     summary="Contenedor de Frames",
 )
-async def get_orchard_gallery_buttons(userRequest: QueryFrameSchema):
-    frame_ids = await orchard_buttons(userRequest)
+async def get_orchard_gallery_buttons(userRequest: QueryFrameSchema, ids: list[int] = Query(None)):
+    buttons = await orchard_buttons(userRequest)
 
-    return frame_ids
+    return buttons
 
 
 # ********************

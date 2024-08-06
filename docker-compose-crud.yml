@@ -48,7 +48,7 @@ services:
     image: postgres:16.0
     restart: always
     volumes:
-      - db_hic_cibus:/var/lib/postgresql"postgresql"/data/
+      - db_hic_cibus:/var/lib/postgresql/data/
       - ./scripts/db-init_sql.sh:/docker-entrypoint-initdb.d/db-init_sql.sh
     labels:
       - "traefik.enable=true"

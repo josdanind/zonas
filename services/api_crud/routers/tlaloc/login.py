@@ -52,7 +52,6 @@ async def login(
         if not user.chat_id:
             to_update = SessionInDBUpdateSchema(chat_id=chat_id).model_dump(exclude_none=True)
             to_update["updated_at"] = datetime.now()
-            print("*"*20)
             await crud_manager.update(to_update, telegram_user=username)
 
         return {

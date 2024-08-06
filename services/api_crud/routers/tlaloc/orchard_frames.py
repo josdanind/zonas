@@ -16,7 +16,7 @@ async def orchard_buttons(query:QueryFrameSchema):
         case "gallery":
             match query.value:
                 case "atrium":
-                    buttons = await get_atrium_buttons(query.link, query.farm_id)
+                    buttons = await get_atrium_buttons(query.link, query.extra_fields())
                 case "categories":
                     pass
                 case _:
@@ -24,13 +24,20 @@ async def orchard_buttons(query:QueryFrameSchema):
 
     return buttons
 
-async def get_atrium_buttons(link: str, farm_id:int):
+# async def get_atrium_buttons(link: str, farm_id:int):
+async def get_atrium_buttons(link: str, condition: dict | None):
     # Inicializa el gestor CRUD con la base de datos y el modelo de cultivo
     crud_manager = CRUDManager(database_hic_cibus, cropModel)
 
     # Consulta para obtener los cultivos de la granja especificada
-    query = "SELECT id, crop FROM crops WHERE farm_id = :farm_id;"
-    crops = await crud_manager.db.fetch_all(query, {"farm_id": farm_id})
+    if not condition:
+        query = "SELECT id, crop FROM crops;"
+        crops = await crud_manager.db.fetch_all(query)
+    else:
+        key, value = next(iter(condition.items()))
+        query = f"SELECT id, crop FROM crops WHERE {key} = :{key};"
+        crops = await crud_manager.db.fetch_all(query, condition)
+
 
     crops_callback_data = {}
 
