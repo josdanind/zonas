@@ -18,3 +18,11 @@ class GallerySchema(BaseModel):
     name: str
     frame: FrameDataWrapperSchema
     selfButtonLabel: str
+
+
+class GalleryFrameDataSchema(BaseModel):
+    link: str
+    query: dict
+    cover: str
+    text_box: dict
+    template: str

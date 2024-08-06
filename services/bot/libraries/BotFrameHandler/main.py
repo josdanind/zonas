@@ -15,10 +15,11 @@ from telebot.asyncio_helper import ApiTelegramException
 import aiohttp
 
 # Schemas
-from .schemas import TheaterSchema,  FrameSchema
+from .schemas import TheaterSchema, FrameSchema,ButtonSchema
 
 # Utils - BotFrameHandler
 from libraries.BotFrameHandler.utils import (
+    http_exception_handler,
     error_handler,
     check_file,
     print_error_message,
@@ -29,7 +30,9 @@ from libraries.BotFrameHandler.utils import (
 class TheaterHandler:
     __templates = ["with_cover"]
     __cover_path = "img/lobby.png"
+    # Endpoint paths
     __update_session_endpoint = "/update_session"
+    __authenticate_user = "/login"
 
     def __init__(
         self,
@@ -42,30 +45,117 @@ class TheaterHandler:
     ) -> None:
         self,
         self.bot = bot
-        self.theaters = theaters
+        self.theaters = self.__check_theaters(theaters)
+        #! mejor pasar la url de la imagen
         self.path = path
         self.api_crud_url = api_crud_url
         self.text_box = text_box
-        self.frames = {}
+        self.theater_frame_data = {}
         self.frame_template: str = self.__check_template(frame_template)
         self.__lobby_keyboardMarkup = self.__set_keyboard(frame_template)
         self.lobby_frame = self.__create_lobby_frame()
 
-    async def __update_session(self, session_id: int, to_update: dict):
+    @http_exception_handler
+    async def update_session(self, session_id: int, to_update: dict):
         async with aiohttp.ClientSession() as session:
             url = self.api_crud_url + self.__update_session_endpoint
             payload = {"session_id": session_id, "session_table": to_update}
 
             async with session.put(url=url, json=payload) as resp:
-                user = await resp.json()
+                # Raise an error if the response status is 4xx or 5xx
+                resp.raise_for_status()
 
-                if resp.status == 200:
-                    return user
-                else:
-                    return None
+                # Return JSON response if the status code is 200
+                return await resp.json()
 
+    @http_exception_handler
+    async def authenticate_user(self, username: str, chat_id: int):
+        url = f"{self.api_crud_url}{self.__authenticate_user}"
+        payload = {"username": username, "chat_id": chat_id}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url=url, json=payload) as resp:
+                # Raise an error if the response status is 4xx or 5xx
+                resp.raise_for_status()
+
+                # Return JSON response if the status code is 200
+                return await resp.json()
+
+    @http_exception_handler
+    async def get_atrium(self, theater_name:str, **condition):
+        theater_data = self.theater_frame_data[theater_name]
+        container_url = self.api_crud_url + theater_data["container_path"]
+
+        # Datos del atrium
+        frame_data = theater_data["galleries"]["atrium"]
+        text_box = frame_data["text_box"]
+        link = frame_data["link"]
+        query = frame_data["query"]
+
+        # *Cover y Caption
+        cover = frame_data["cover"]
+        caption =  f"<b>{text_box['title']}</b>\n\n{text_box['description']}"
+
+        # *Buttons
+        buttons: list[ButtonSchema] = []
+        # *Template
+        template = frame_data["template"]
+
+        async with aiohttp.ClientSession() as session:
+            payload = {**query, "link": link, **condition}
+
+            async with session.post(url=container_url, json=payload) as resp:
+                resp.raise_for_status()
+
+                buttons =  await resp.json()
+
+        # Añadir botón "Ir atrás"
+        buttons.append(
+            {
+                "text": "Ir atrás",
+                "callback_data": f"goBack@{theater_name}",
+            }
+        )
+
+        #* Retorna el Frame del Atrium
+        return self.create_frame_with_template(
+            cover=cover,
+            caption=caption,
+            buttons=buttons,
+            template=template
+        )
+
+    def create_frame_with_template(
+        self,
+        cover: str,
+        caption: str,
+        buttons: list[dict],
+        template: str
+    ) -> FrameSchema:
+        match template:
+            case "with_cover":
+                keyboard = InlineKeyboardMarkup(row_width=1)
+                keyboard.add(
+                    *[InlineKeyboardButton(**button) for button in buttons]
+                )
+
+                return FrameSchema(
+                    cover=cover,
+                    reply_markup=keyboard,
+                    caption=caption,
+                    parse_mode="HTML"
+                )
 
     def __set_keyboard(self, frame_template: str) -> InlineKeyboardMarkup:
+        """
+        Define el diseño del teclado, estableciendo la cantidad de botones por fila
+
+        Args:
+            frame_template (str): plantilla del frame
+
+        Returns:
+            InlineKeyboardMarkup: Teclado del TheaterHandler
+        """
         # *Verifica si es un template válido
         template = self.__check_template(frame_template)
 
@@ -93,9 +183,10 @@ class TheaterHandler:
         Returns:
             dict:
                 - 'frame' (FrameSchema): es el frame del Theater.
-                - 'display_galleries' (bool): 'true' para mostrar las 'galleries' en el frame del theater.
-                - 'atrium' (str): enlace para obtener el 'frame' del 'atrium'
-                - "galleries_buttons" (list): son botones que contienen el enlace de cada 'gallery' y del 'atrium'
+                - 'display_galleries' (bool): 'true' para mostrar las 'galleries' en el frame del theater, 'false' para ir directamente al Atrium.
+                - 'galleries' (dict): las llaves son las galerías del theater (Incluye el atrium), cada una contiene las keys: link, query, cover, text_box.
+                - 'galleries_buttons' (list): Son botones que contienen el enlace hacia cada 'gallery' (se incluye el Atrium).
+                - 'container_path' (str): El path del endpoint para acceder al contenedor del Theater.
         """
         # * KEYBOARD
         keyboard = self.__set_keyboard(theater.frame_template)
@@ -119,6 +210,7 @@ class TheaterHandler:
                     "query": atrium_frame.query,
                     "cover": atrium_frame.data["cover"],
                     "text_box": atrium_frame.data["text_box"],
+                    "template": atrium_frame.template
                 }
             }
         )
@@ -141,7 +233,8 @@ class TheaterHandler:
                         "link": gallery_link,
                         "query": gallery.frame.query,
                         "cover": gallery.frame.data["cover"],
-                        "text_box": atrium_frame.data["text_box"],
+                        "text_box": gallery.frame.data["text_box"],
+                        "template": gallery.frame.template
                     }
                 }
             )
@@ -149,15 +242,13 @@ class TheaterHandler:
         # * Creating the keyboard
         buttons.append(atrium_button)
         buttons += gallery_buttons
-
         # -- GoBack Button
-        if atrium_frame.back_button:
-            buttons.append(
-                InlineKeyboardButton(
-                    text="Ir atrás",
-                    callback_data=f"goBack@lobby",
-                )
+        buttons.append(
+            InlineKeyboardButton(
+                text="Ir atrás",
+                callback_data=f"goBack@lobby",
             )
+        )
 
         keyboard.add(*buttons)
 
@@ -167,6 +258,7 @@ class TheaterHandler:
         frame = FrameSchema(
             cover=atrium_frame.data["cover"], reply_markup=keyboard, caption=caption, parse_mode="HTML"
         )
+
 
         return {
             f"{theater.id}": {
@@ -207,15 +299,6 @@ class TheaterHandler:
             # *Este ciclo "for" crea los botones que se exponen en el Lobby,
             # *cada botón es un enlace hacia un Theater
             for theater in self.theaters:
-                # *Verifica si el elemento de la lista es un Theater
-                if not isinstance(theater, TheaterSchema) :
-                    print_error_detail(title=error_message, details=[
-                        inspect.currentframe().f_code.co_name,
-                        "Theater no valido",
-                    ])
-
-                    continue
-
                 theater_id: str = theater.id
                 billboard: str = theater.billboard
 
@@ -236,7 +319,8 @@ class TheaterHandler:
 
                 theater_frames = self.__set_theater_frames(theater)
 
-                self.frames.update(theater_frames)
+                # self.frames.update(theater_frames)
+                self.theater_frame_data.update(theater_frames)
 
             # Se añaden los botones al `Keyboard`
             self.__lobby_keyboardMarkup.add(*buttons)
@@ -280,6 +364,23 @@ class TheaterHandler:
                 raise ValueError(f"Invalid frame template: {template}")
         except ValueError as err:
             print_error_message(err)
+
+    def __check_theaters(self, theaters:list[TheaterSchema]):
+        ok_theaters = []
+
+        for theater in theaters:
+            if not isinstance(theater, TheaterSchema):
+                print_error_detail(
+                        title="Se produjo un error al incluir un Theater en el TheaterHandler",
+                        details=[
+                            inspect.currentframe().f_code.co_name,
+                            "Theater no valido",
+                        ]
+                )
+            else:
+                ok_theaters.append(theater)
+
+        return ok_theaters
 
     async def send_frame(self, frame: FrameSchema, chat_id: int):
         msg: Message | None = None
@@ -333,7 +434,7 @@ class TheaterHandler:
                         reply_markup=frame.reply_markup,
                     )
 
-                    await self.__update_session(
+                    await self.update_session(
                         session_id=user["session_id"],
                         to_update={"current_action": {"route": frame_route}}
                     )
