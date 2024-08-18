@@ -1,5 +1,5 @@
 # Standard Library
-import os, inspect
+import inspect
 
 # pyTelegramBotAPI
 from telebot.async_telebot import AsyncTeleBot
@@ -29,7 +29,6 @@ from libraries.BotFrameHandler.utils import (
 
 class TheaterHandler:
     __templates = ["with_cover"]
-    __cover_path = "img/lobby.png"
     # Endpoint paths
     __update_session_endpoint = "/update_session"
     __authenticate_user = "/login"
@@ -38,7 +37,7 @@ class TheaterHandler:
         self,
         bot: AsyncTeleBot,
         theaters: list[TheaterSchema],
-        path: str,
+        cover_url: str,
         api_crud_url: str,
         text_box: dict,
         frame_template: str = "with_cover",
@@ -46,8 +45,7 @@ class TheaterHandler:
         self,
         self.bot = bot
         self.theaters = self.__check_theaters(theaters)
-        #! mejor pasar la url de la imagen
-        self.path = path
+        self.cover_url = cover_url
         self.api_crud_url = api_crud_url
         self.text_box = text_box
         self.theater_frame_data = {}
@@ -118,15 +116,15 @@ class TheaterHandler:
         )
 
         #* Retorna el Frame del Atrium
-        return self.create_frame_with_template(
+        return TheaterHandler.create_frame_with_template(
             cover=cover,
             caption=caption,
             buttons=buttons,
             template=template
         )
 
+    @staticmethod
     def create_frame_with_template(
-        self,
         cover: str,
         caption: str,
         buttons: list[dict],
@@ -281,17 +279,9 @@ class TheaterHandler:
         """
         # Mensaje de error si no se crea el frame del lobby
         error_message = "Se produjo un error creando el frame del Lobby"
-        # str: Path del Cover del lobby
-        cover_path = os.path.join(self.path, self.__cover_path)
-        # bytes: contendrá la imagen del Cover
-        cover: bytes | None = b""
+        cover: str = self.cover_url
 
         try:
-            # *Lobby Cover
-            check_file(cover_path)
-            with open(cover_path, mode="rb") as img:
-                cover = img.read()
-
             # *Lobby Keyboard
             # --Buttons list
             buttons: list[InlineKeyboardButton] = []
@@ -346,11 +336,6 @@ class TheaterHandler:
                 )
 
             return lobby_frame
-
-        except FileNotFoundError as e:
-            print_error_detail(
-                title=e.args[0]["caller"], details=[error_message, e.args[0]["reason"]]
-            )
         except Exception as err:
             print("ERROR: ", err)
 

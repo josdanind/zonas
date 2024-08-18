@@ -57,10 +57,12 @@ async def redirect_to_frame_button(call: CallbackQuery):
 
         match gallery:
             case "galleries":
+                gallery_frame = theater_handler.theater_frame_data[theater]["frame"]
+
                 await theater_handler.change_message(
                     chat_id=chat_id,
                     user=user,
-                    frame=theater_handler.theater_frame_data[theater]["frame"],
+                    frame=gallery_frame,
                     frame_route= f"/{theater}"
                 )
             case "atrium":
@@ -76,6 +78,7 @@ async def redirect_to_frame_button(call: CallbackQuery):
                 else:
                     ids = queries["id"]
                     print(ids)
+                    print(theater_link)
             case _:
                 pass
 

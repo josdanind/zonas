@@ -1,6 +1,3 @@
-# Standard Library
-import os
-
 # Environment Variables
 from config import API_CRUD_URL
 
@@ -15,14 +12,19 @@ from libraries.BotFrameHandler import TheaterHandler
 # ************
 from .theaters.orchards.theater import theater as orchard_theater
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
+# URL donde se aloja la imagen del cover
+COVER_URL = "https://imgur.com/9Ng2xrK"
 
-text_box = {"title": "Bienvenido a Tlaloc", "description": "Selecciona un proceso"}
+# Text box, texto descriptivo del Frame del TheaterHandler (lobby)
+text_box = {
+    "title": "Bienvenido a Tlaloc",
+    "description": "Selecciona un proceso"
+}
 
 theater_handler = TheaterHandler(
     bot=bot,
     theaters=[orchard_theater],
-    path=current_dir,
+    cover_url=COVER_URL,
     text_box=text_box,
     api_crud_url=API_CRUD_URL,
 )

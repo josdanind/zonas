@@ -9,7 +9,7 @@ from libraries.BotFrameHandler.utils import create_TheaterSchema
 
 container_path = os.path.dirname(os.path.abspath(__file__))
 
-# *********
-# *  View *
-# *********
+# ********
+# * View *
+# ********
 theater = create_TheaterSchema(container_path)
