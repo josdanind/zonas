@@ -421,7 +421,7 @@ class TheaterHandler:
 
                     await self.update_session(
                         session_id=user["session_id"],
-                        to_update={"current_action": {"route": frame_route}}
+                        to_update={"current_action": frame_route}
                     )
 
                     return msg

@@ -22,7 +22,7 @@ async def start_command(message: Message):
             session_id=user["session_id"],
             to_update={
                 "main_message_id": msg_id,
-                "current_action": {"route": "/"}
+                "current_action": "/"
             }
         )
     else:
