@@ -1,4 +1,3 @@
-# Standar
 # Schemas
 from schemas import QueryFrameSchema
 
@@ -24,7 +23,6 @@ async def orchard_buttons(query:QueryFrameSchema):
 
     return buttons
 
-# async def get_atrium_buttons(link: str, farm_id:int):
 async def get_atrium_buttons(link: str, condition: dict | None):
     # Inicializa el gestor CRUD con la base de datos y el modelo de cultivo
     crud_manager = CRUDManager(database_hic_cibus, cropModel)

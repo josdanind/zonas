@@ -301,6 +301,8 @@ async def register_workers_sessions(crud_manager: CRUDManager, workers_data: dic
                     database_message(f"Se creó una sesión para {worker_schema.name}")
                 else:
                     session_schema.id = exist.id
+                    #! Hay doble mensaje para el mismo fin - Corregir
+                    #! el otro mensaje esta en el CRUD_Manager
                     database_message(
                         f"Existe una sesión para {worker_schema.name}, su id es {session_schema.id}"
                     )

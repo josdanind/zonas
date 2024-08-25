@@ -6,9 +6,11 @@ from utils.console_message import *
 
 # Databases
 from databases import Database
+from databases.backends.postgres import Record
 
 # SQLAlchemy
-from sqlalchemy import Table, select, delete
+from sqlalchemy import Table, select, delete, and_
+from sqlalchemy.exc import NoSuchColumnError
 import sqlalchemy
 
 # library utilities
@@ -38,13 +40,58 @@ class CRUDManager:
         """
         return await self.db.fetch_all(select(self.db_table))
 
-    async def select_and(self, **conditions):
+    async def select_and(
+        self,
+        fetch_one: bool = True,
+        **conditions: dict[str, any]
+    )-> Record | list[Record] | None:
+        """
+        Realiza una consulta SELECT en la tabla asociada, aplicando condiciones
+        específicas en la cláusula WHERE.
+
+        Este método permite filtrar registros en la tabla utilizando condiciones
+        de tipo `AND`, donde cada clave en `conditions` representa una columna y
+        su valor correspondiente es el valor que debe cumplir esa columna.
+
+        Args:
+            fetch_one (bool, optional): Indica si se debe devolver solo un
+                registro (`True`) o todos los registros que coincidan con las
+                condiciones (`False`). Por defecto es `True`.
+            **conditions: Claves que representan nombres de columnas y valores
+                que representan los valores que se desean filtrar. Por ejemplo,
+                `name="John", age=30`.
+
+        Raises:
+            NoSuchColumnError: Si se proporciona un nombre de columna en
+                `conditions` que no existe en la tabla, se lanza esta excepción
+                con un mensaje indicando las columnas inválidas.
+
+        Returns:
+            Record | list[Record] | None: Si `fetch_one` es `True`, devuelve
+                un objeto de tipo `Record` que representa un solo registro o
+                `None` si no se encuentra ningún registro. Si `fetch_one`
+                es `False`, devuelve una lista de objetos `Record`, cada uno
+                representando un registro.
+        """
+
         query = self.db_table.select()
 
-        for key, value in conditions.items():
-            query = query.where(getattr(self.db_table.c, key) == value)
+        # Validar si todas las columnas existen en la tabla
+        columns = self.db_table.c.keys()
+        invalid_columns = [key for key in conditions if key not in columns]
 
-        return await self.db.fetch_one(query)
+        if invalid_columns:
+            raise NoSuchColumnError(
+                f"Las siguientes columnas no existen en la tabla: {', '.join(invalid_columns)}"
+            )
+
+        # Añadir condiciones al query
+        if conditions:
+            conditions_list = [self.db_table.c[key] == value for key, value in conditions.items()]
+            query = query.where(and_(*conditions_list))
+
+        # Ejecutar la consulta
+        return await self.db.fetch_one(query) if fetch_one else await self.db.fetch_all(query)
 
     async def select_by_keywords(
         self,

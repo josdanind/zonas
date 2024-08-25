@@ -137,7 +137,8 @@ def createSessionModel(metadata: MetaData) -> Table:
         Column("chat_id", Integer, unique=True),
         Column("worker_id", Integer, ForeignKey("workers.id")),
         Column("main_message_id", Integer),
-        Column("current_action", JSON),
+        Column("current_action", String(50)),
+        Column("physical_frames", ARRAY(String), nullable=False),
         Column("created_at", DateTime, default=func.now()),
         Column("updated_at", DateTime),
     )

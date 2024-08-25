@@ -32,6 +32,7 @@ async def login(
         sessions.id AS session_id,
         sessions.main_message_id,
         sessions.current_action,
+        sessions.physical_frames,
         sessions.chat_id,
         workers.id AS worker_id,
         workers.name,
@@ -61,6 +62,7 @@ async def login(
             "session_id": user.session_id,
             "main_message_id": user.main_message_id,
             "current_action": user.current_action,
+            "physical_frames": user.physical_frames,
             "farm_id": user.farm_id
         }
 
