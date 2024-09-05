@@ -42,7 +42,7 @@ caption = lambda title: f"""\
 <b>{title}</b>\n
 """
 
-async def get_physical_frame(theater: str, id:int, session_id:int):
+async def get_physical_frame(theater: str, id:int):
     crud_manager = CRUDManager(database_hic_cibus, cropModel)
 
     data_physical_frame =  await crud_manager.db.fetch_one(query, {"id":id})
@@ -57,6 +57,6 @@ async def get_physical_frame(theater: str, id:int, session_id:int):
         "caption": caption(data_physical_frame.crop),
         "template": frame_data["template"],
     }
-    
+
 
     return physical_frame

@@ -36,8 +36,8 @@ async def get_orchard_gallery_buttons(userRequest: QueryFrameSchema):
     status_code=status.HTTP_200_OK,
     summary="Contenedor de Frames",
 )
-async def get_orchard_gallery_buttons(theater: str, id:int, session_id:int,):
-    physical_frame = await get_physical_frame(theater, id, session_id)
+async def get_orchard_gallery_buttons(theater: str, id:int):
+    physical_frame = await get_physical_frame(theater, id)
 
     return physical_frame
 
