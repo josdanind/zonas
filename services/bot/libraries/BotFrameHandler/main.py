@@ -130,9 +130,9 @@ class TheaterHandler:
             template=template
         )
 
-    async def get_physical_frame(self, session_id:int, theater:str, id:int) -> PhysicalFrame:
+    async def get_physical_frame(self, theater:str, id:int) -> PhysicalFrame:
         url = f"{self.api_crud_url}{self.__ticket_office}/{theater}"
-        params = {"id": id, "session_id": session_id}
+        params = {"id": id}
 
         async with aiohttp.ClientSession() as session:
             physical_frame = await fetch(

@@ -99,7 +99,6 @@ async def redirect_to_frame_button(call: CallbackQuery):
                         orchard_id = ids[0]
 
                         physical_frame = await theater_handler.get_physical_frame(
-                            session_id=session_id,
                             theater=theater,
                             id=orchard_id,
                         )
