@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, ConfigDict
 
 from telebot.types import InlineKeyboardMarkup
 
+#! cambiar nombre frame_template -> template
 class FrameSchema(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -18,3 +19,13 @@ class FrameSchema(BaseModel):
 class FrameWithCoverSchema(FrameSchema):
     cover: bytes | str
     row_width: Literal[1] = 1
+
+class PhysicalFrame(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    id: int | None = None
+    theater: str | None = None
+    cover: bytes | str | None = None
+    buttons: list[dict] | None = None
+    caption: str | None = None
+    template: str = "with_cover"

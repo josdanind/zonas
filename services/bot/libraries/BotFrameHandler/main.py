@@ -3,19 +3,24 @@ import inspect
 
 # pyTelegramBotAPI
 from telebot.async_telebot import AsyncTeleBot
+from telebot.asyncio_helper import ApiTelegramException
 from telebot.types import (
     InlineKeyboardMarkup,
     InlineKeyboardButton,
     Message,
     InputMediaPhoto,
 )
-from telebot.asyncio_helper import ApiTelegramException
 
 # aiohttp
 import aiohttp
 
 # Schemas
-from .schemas import TheaterSchema, FrameSchema,ButtonSchema
+from .schemas import (
+    ButtonSchema,
+    FrameSchema,
+    PhysicalFrame,
+    TheaterSchema,
+)
 
 # Utils - BotFrameHandler
 from libraries.BotFrameHandler.utils import (
@@ -24,14 +29,16 @@ from libraries.BotFrameHandler.utils import (
     check_file,
     print_error_message,
     print_error_detail,
-    print_test,
+    print_test
 )
 
+from libraries.BotFrameHandler.utils.makeHttpRequest import fetch
 class TheaterHandler:
     __templates = ["with_cover"]
     # Endpoint paths
     __update_session_endpoint = "/update_session"
     __authenticate_user = "/login"
+    __ticket_office = "/ticket_office"
 
     def __init__(
         self,
@@ -122,6 +129,56 @@ class TheaterHandler:
             buttons=buttons,
             template=template
         )
+
+    async def get_physical_frame(self, session_id:int, theater:str, id:int) -> PhysicalFrame:
+        url = f"{self.api_crud_url}{self.__ticket_office}/{theater}"
+        params = {"id": id, "session_id": session_id}
+
+        async with aiohttp.ClientSession() as session:
+            physical_frame = await fetch(
+                session=session,
+                url=url,
+                params=params
+            )
+
+        return PhysicalFrame(**physical_frame)
+
+    @staticmethod
+    def build_frame_from_physical(
+        physical_frame: PhysicalFrame
+    ):
+        match physical_frame.template:
+            case "with_cover":
+                keyboard = InlineKeyboardMarkup(row_width=1)
+                buttons = physical_frame.buttons
+                theater = physical_frame.theater
+                frame_id = physical_frame.id
+                cover = physical_frame.cover
+                caption = physical_frame.caption
+
+
+                if  buttons:
+                    keyboard.add(
+                        *[InlineKeyboardButton(**button) for button in buttons]
+                    )
+
+                # Close Button
+                close_button = InlineKeyboardButton(
+                    text="Cerrar",
+                    callback_data=f"closeFrame://{theater}?id={frame_id}"
+                )
+
+                keyboard.add(close_button)
+
+                return FrameSchema(
+                    cover=cover,
+                    reply_markup=keyboard,
+                    caption=caption,
+                    parse_mode="HTML",
+                    frame_template="with_cover"
+                )
+
+
 
     @staticmethod
     def create_frame_with_template(
