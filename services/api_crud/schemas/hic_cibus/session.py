@@ -8,8 +8,6 @@ class SessionInDBSchema(BaseModel):
     chat_id: int | None = None
     main_message_id: int | None = None
     current_action: str = ""
-    physical_frames: list = Field(default_factory=list)
-
 
 class SessionInDBUpdateSchema(BaseModel):
     worker_id: int | None = None
@@ -17,7 +15,6 @@ class SessionInDBUpdateSchema(BaseModel):
     chat_id: int | None = None
     main_message_id: int | None = None
     current_action: str | None = None
-    physical_frames: list | None = None
 
 class RequestToUpdateSessionSchema(BaseModel):
     session_id: int

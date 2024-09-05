@@ -11,9 +11,7 @@ from sqlalchemy import (
     Boolean,
 )
 
-from sqlalchemy.dialects.postgresql import JSON, ARRAY, TEXT, BYTEA, UUID, BOOLEAN
-
-# from geoalchemy2 import Geography
+from sqlalchemy.dialects.postgresql import JSON, ARRAY, TEXT, BYTEA, UUID
 
 
 # *************
@@ -138,11 +136,23 @@ def createSessionModel(metadata: MetaData) -> Table:
         Column("worker_id", Integer, ForeignKey("workers.id")),
         Column("main_message_id", Integer),
         Column("current_action", String(50)),
-        Column("physical_frames", ARRAY(String), nullable=False),
         Column("created_at", DateTime, default=func.now()),
         Column("updated_at", DateTime),
     )
 
+# ***************************
+# * Frames Físicos Enviados *
+# ***************************
+def createPhysicalFrameSentModel(metadata: MetaData) -> Table:
+    return Table(
+        "physical_frames_sent",
+        metadata,
+        Column("shipment_id", Integer, primary_key=True),
+        Column("fk_session_id", Integer, ForeignKey("sessions.id"), nullable=False),
+        Column("fk_physical_frame_id", Integer, ForeignKey("control_systems.id"), nullable=False),
+        Column("frame_link", String(2048), unique=True, nullable=False),
+        Column("message_id", Integer),
+    )
 
 # **********************
 # * Sistema de Control *
@@ -152,7 +162,8 @@ def createControlSystemModel(metadata: MetaData) -> Table:
         "control_systems",
         metadata,
         Column("id", Integer, primary_key=True),
-        Column("crop_id", Integer, ForeignKey("crops.id")),
+        # Column("crop_id", Integer, ForeignKey("crops.id")),
+        Column("crop_id", Integer, ForeignKey("crops.id"), unique=True),
         Column("uuid", UUID, nullable=False, unique=True),
         Column("device", String(100), nullable=False),
         Column("description", TEXT),

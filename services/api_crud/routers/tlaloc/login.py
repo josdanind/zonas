@@ -32,7 +32,6 @@ async def login(
         sessions.id AS session_id,
         sessions.main_message_id,
         sessions.current_action,
-        sessions.physical_frames,
         sessions.chat_id,
         workers.id AS worker_id,
         workers.name,

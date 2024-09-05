@@ -17,7 +17,8 @@ from .hic_cibus.models import (
     createSensorModel,
     createCrudUser,
     createSensorDataModel,
-    createActuatorDataModel
+    createActuatorDataModel,
+    createPhysicalFrameSentModel
 )
 
 # Bots
@@ -38,3 +39,4 @@ actuatorModel = createActuatorModel(metadata_hic_cibus)
 sensorModel = createSensorModel(metadata_hic_cibus)
 sensorDataModel = createSensorDataModel(metadata_hic_cibus)
 actuatorDataModel = createActuatorDataModel(metadata_hic_cibus)
+frameModel = createPhysicalFrameSentModel(metadata_hic_cibus)

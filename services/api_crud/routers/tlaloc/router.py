@@ -1,5 +1,5 @@
 # FastAPI
-from fastapi import APIRouter, status, Query
+from fastapi import APIRouter, status, Request
 
 # Schemas
 from schemas import UserLoginSchema, RequestToUpdateSessionSchema, QueryFrameSchema
@@ -8,6 +8,7 @@ from schemas import UserLoginSchema, RequestToUpdateSessionSchema, QueryFrameSch
 from .login import login
 from .update_session import update_session
 from .orchard_frames import orchard_buttons
+from .get_physical_frame import get_physical_frame
 
 # Utils
 from utils.handler_exceptions import handler_exceptions
@@ -22,11 +23,23 @@ router = APIRouter(prefix="/tlaloc", tags=["Tlaloc"])
     status_code=status.HTTP_200_OK,
     summary="Contenedor de Frames",
 )
-async def get_orchard_gallery_buttons(userRequest: QueryFrameSchema, ids: list[int] = Query(None)):
+async def get_orchard_gallery_buttons(userRequest: QueryFrameSchema):
     buttons = await orchard_buttons(userRequest)
 
     return buttons
 
+# *****************************
+# * POST - Get Physical Frame *
+# *****************************
+@router.get(
+    path="/ticket_office/{theater}",
+    status_code=status.HTTP_200_OK,
+    summary="Contenedor de Frames",
+)
+async def get_orchard_gallery_buttons(theater: str, id:int, session_id:int,):
+    physical_frame = await get_physical_frame(theater, id, session_id)
+
+    return physical_frame
 
 # ********************
 # * POST - Bot Login *
