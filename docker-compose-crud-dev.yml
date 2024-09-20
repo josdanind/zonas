@@ -31,6 +31,8 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - ALGORITHM=${ALGORITHM}
       - ACCESS_TOKEN_EXPIRE_DAYS=${ACCESS_TOKEN_EXPIRE_DAYS}
+      # BOT
+      - TLALOC_URL=http://bot:${BOT_PORT}
     networks:
       - hic-cibus
 

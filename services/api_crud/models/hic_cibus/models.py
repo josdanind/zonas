@@ -9,9 +9,10 @@ from sqlalchemy import (
     Date,
     func,
     Boolean,
+    UniqueConstraint
 )
 
-from sqlalchemy.dialects.postgresql import JSON, ARRAY, TEXT, BYTEA, UUID
+from sqlalchemy.dialects.postgresql import JSON, ARRAY, TEXT, BYTEA, UUID, FLOAT
 
 
 # *************
@@ -145,13 +146,13 @@ def createSessionModel(metadata: MetaData) -> Table:
 # ***************************
 def createPhysicalFrameSentModel(metadata: MetaData) -> Table:
     return Table(
-        "physical_frames_sent",
-        metadata,
+        "physical_frames_sent", metadata,
         Column("shipment_id", Integer, primary_key=True),
         Column("fk_session_id", Integer, ForeignKey("sessions.id"), nullable=False),
         Column("fk_physical_frame_id", Integer, ForeignKey("control_systems.id"), nullable=False),
-        Column("frame_link", String(2048), unique=True, nullable=False),
+        Column("frame_link", String(2048), nullable=False),
         Column("message_id", Integer),
+        UniqueConstraint('fk_session_id', 'frame_link', name='unique_session_ruta')
     )
 
 # **********************
@@ -162,7 +163,6 @@ def createControlSystemModel(metadata: MetaData) -> Table:
         "control_systems",
         metadata,
         Column("id", Integer, primary_key=True),
-        # Column("crop_id", Integer, ForeignKey("crops.id")),
         Column("crop_id", Integer, ForeignKey("crops.id"), unique=True),
         Column("uuid", UUID, nullable=False, unique=True),
         Column("device", String(100), nullable=False),
@@ -224,6 +224,26 @@ def createSensorModel(metadata: MetaData) -> Table:
         Column("created_at", DateTime, default=func.now()),
         Column("updated_at", DateTime),
     )
+
+# ***************
+# * Sensor Logs *
+# ***************
+# def createSensorDataModel(metadata: MetaData) -> Table:
+#     return Table(
+#         "sensors_logs",
+#         metadata,
+#         Column("id", Integer, primary_key=True),
+#         Column(
+#             "sensor_id",
+#             Integer,
+#             ForeignKey("sensors.id"),
+#         ),
+#         Column("timestamp", DateTime, nullable=False),
+#         Column("quantity", String(50), nullable=False),
+#         Column("unit", String(50), nullable=False),
+#         Column("value", FLOAT, nullable=False),
+#     )
+
 
 # ***************
 # * Sensor Data *

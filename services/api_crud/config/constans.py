@@ -32,3 +32,7 @@ administrator = CrudUserInDB(
 SECRET_KEY: str = environ["SECRET_KEY"]
 ALGORITHM: str = environ["ALGORITHM"]
 ACCESS_TOKEN_EXPIRE_DAYS: int = int(environ["ACCESS_TOKEN_EXPIRE_DAYS"])
+
+
+# * BOT
+TLALOC_URL: str = environ["TLALOC_URL"]

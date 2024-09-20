@@ -41,6 +41,40 @@ class CRUDManager:
         return await self.db.fetch_all(select(self.db_table))
 
     async def select_and(
+    self,
+    fetch_one: bool = True,
+    **conditions: dict[str, any]
+    ) -> Record | list[Record] | None:
+        """
+        Realiza una consulta SELECT con condiciones en la tabla asociada.
+
+        Args:
+            fetch_one (bool): Indica si se devuelve un solo registro o todos.
+            **conditions: Condiciones para aplicar en la cláusula WHERE.
+
+        Returns:
+            Record | list[Record] | None: Registro(s) que cumplen las condiciones.
+        """
+        query = self.db_table.select()
+
+        # Validar columnas no existentes en la tabla
+        invalid_columns = [col for col in conditions if col not in self.db_table.c]
+
+        if invalid_columns:
+            raise NoSuchColumnError(f"Columnas no válidas: {', '.join(invalid_columns)}")
+
+        # Aplicar condiciones a la consulta si se especificaron
+        if conditions:
+            query = query.where(and_(
+                *(self.db_table.c[col] == val for col, val in conditions.items())
+            ))
+
+        # Ejecutar consulta
+        result = await self.db.fetch_one(query) if fetch_one else await self.db.fetch_all(query)
+
+        return result
+
+    async def select_and_2(
         self,
         fetch_one: bool = True,
         **conditions: dict[str, any]
@@ -82,7 +116,7 @@ class CRUDManager:
 
         if invalid_columns:
             raise NoSuchColumnError(
-                f"Las siguientes columnas no existen en la tabla: {', '.join(invalid_columns)}"
+                f"Columnas no válidas: {', '.join(invalid_columns)}"
             )
 
         # Añadir condiciones al query
