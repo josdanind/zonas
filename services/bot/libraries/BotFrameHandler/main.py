@@ -20,7 +20,12 @@ from .schemas import (
     FrameSchema,
     PhysicalFrame,
     TheaterSchema,
+    PhysicalFrameSent_RecordSchema,
+    PhysicalFrameSent_DataSchema
 )
+
+# from .schemas.physical_frame_sent_record import PhysicalFrame as PhFrame
+from .schemas.physical_frame_sent_record import PhysicalFrame
 
 # Utils - BotFrameHandler
 from libraries.BotFrameHandler.utils import (
@@ -39,6 +44,7 @@ class TheaterHandler:
     __update_session_endpoint = "/update_session"
     __authenticate_user = "/login"
     __ticket_office = "/ticket_office"
+    __register_sent_physical_frame_endpoint = "/physical_frames_sent"
 
     def __init__(
         self,
@@ -59,6 +65,88 @@ class TheaterHandler:
         self.frame_template: str = self.__check_template(frame_template)
         self.__lobby_keyboardMarkup = self.__set_keyboard(frame_template)
         self.lobby_frame = self.__create_lobby_frame()
+
+    #! **********************
+    #! * Métodos inestables *
+    #! **********************
+    async def  get_physical_frame(self, theater:str, id:int) -> PhysicalFrame:
+        url = f"{self.api_crud_url}{self.__ticket_office}/{theater}"
+        params = {"id": id}
+
+        async with aiohttp.ClientSession() as session:
+            physical_frame = await fetch(
+                session=session,
+                url=url,
+                params=params
+            )
+
+        return PhysicalFrame(**physical_frame)
+
+    async def register_physical_frame_shipment(
+        self,
+        chat_id: int,
+        frame: PhysicalFrame,
+        record: PhysicalFrameSent_RecordSchema,
+        callback_query_id: int
+    ):
+        url = f"{self.api_crud_url}{self.__register_sent_physical_frame_endpoint}"
+
+        payload = PhysicalFrameSent_DataSchema(
+            chat_id=chat_id,
+            physical_frame=frame,
+            shipment_record=record,
+        ).model_dump()
+
+        async with aiohttp.ClientSession() as session:
+            shipment_id = await fetch(
+                session=session,
+                url=url,
+                method="POST",
+                data=payload
+            )
+
+        if not shipment_id:
+            await self.bot.answer_callback_query(
+                callback_query_id, "El Frame ya fue enviado"
+            )
+
+
+        return shipment_id
+
+    @staticmethod
+    def build_frame_from_physical(
+        physical_frame: PhysicalFrame,
+        session_id: int
+    ):
+        match physical_frame.template:
+            case "with_cover":
+                keyboard = InlineKeyboardMarkup(row_width=1)
+                buttons = physical_frame.buttons
+                cover = physical_frame.cover
+                caption = physical_frame.caption
+
+
+                if  buttons:
+                    keyboard.add(
+                        *[InlineKeyboardButton(**button) for button in buttons]
+                    )
+
+                # Close Button
+                close_button = InlineKeyboardButton(
+                    text="Cerrar",
+                    callback_data=f"closeFrame"
+                )
+
+                keyboard.add(close_button)
+
+                return FrameSchema(
+                    cover=cover,
+                    reply_markup=keyboard,
+                    caption=caption,
+                    parse_mode="HTML",
+                    frame_template="with_cover"
+                )
+    #! **********************
 
     @http_exception_handler
     async def update_session(self, session_id: int, to_update: dict):
@@ -130,22 +218,10 @@ class TheaterHandler:
             template=template
         )
 
-    async def get_physical_frame(self, theater:str, id:int) -> PhysicalFrame:
-        url = f"{self.api_crud_url}{self.__ticket_office}/{theater}"
-        params = {"id": id}
-
-        async with aiohttp.ClientSession() as session:
-            physical_frame = await fetch(
-                session=session,
-                url=url,
-                params=params
-            )
-
-        return PhysicalFrame(**physical_frame)
-
     @staticmethod
     def build_frame_from_physical(
-        physical_frame: PhysicalFrame
+        physical_frame: PhysicalFrame,
+        session_id: int
     ):
         match physical_frame.template:
             case "with_cover":
@@ -165,7 +241,7 @@ class TheaterHandler:
                 # Close Button
                 close_button = InlineKeyboardButton(
                     text="Cerrar",
-                    callback_data=f"closeFrame://{theater}?id={frame_id}"
+                    callback_data=f"closeFrame://{theater}?id={frame_id}&session_id={session_id}"
                 )
 
                 keyboard.add(close_button)
@@ -177,8 +253,6 @@ class TheaterHandler:
                     parse_mode="HTML",
                     frame_template="with_cover"
                 )
-
-
 
     @staticmethod
     def create_frame_with_template(

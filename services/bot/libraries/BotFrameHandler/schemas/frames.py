@@ -21,11 +21,12 @@ class FrameWithCoverSchema(FrameSchema):
     row_width: Literal[1] = 1
 
 class PhysicalFrame(BaseModel):
+    #! Preguntar que es
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     id: int | None = None
     theater: str | None = None
     cover: bytes | str | None = None
-    buttons: list[dict] | None = None
+    buttons: list | None = None
     caption: str | None = None
     template: str = "with_cover"

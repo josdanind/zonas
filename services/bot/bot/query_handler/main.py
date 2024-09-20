@@ -1,6 +1,12 @@
 # Standard library
-import re
+import re, asyncio
 from urllib.parse import urlparse, parse_qs
+
+# AIOHTTP
+import aiohttp
+
+# Environment Variable
+from config import API_CRUD_URL
 
 # BOT
 from telebot.types import CallbackQuery
@@ -12,6 +18,9 @@ from ..frame_handler.main import theater_handler
 # Utils - BotFrameHandler
 from libraries.BotFrameHandler.utils import print_test
 from ..frame_handler.main import theater_handler
+
+# Schemas - BotFrameHandler
+from libraries.BotFrameHandler.schemas import  PhysicalFrameSent_RecordSchema
 
 # Utils - Bot
 from .get_lobby_theater_queries import get_lobby_theater_queries
@@ -44,14 +53,19 @@ async def goBack_button(call: CallbackQuery):
 # ************************
 @bot.callback_query_handler(func=lambda call: "closeFrame" in call.data)
 async def closeFrame_button(call: CallbackQuery):
-    frame_link = call.data.replace("closeFrame", "http")
-    parsed_url = urlparse(frame_link)
-    query_params = parse_qs(parsed_url.query)
+    message_id = call.message.id
+    chat_id = call.from_user.id
 
-    theater = parsed_url.netloc
-    id = query_params["id"][0]
+    async with aiohttp.ClientSession() as session:
+        url = f"{API_CRUD_URL}/delete_record_frame_sent"
+        params = {"message_id": message_id}
 
+        async with session.delete(url, params=params) as resp:
+            resp.raise_for_status()
+
+    await bot.delete_message(chat_id, message_id)
     await bot.answer_callback_query(call.id)
+
 
 # ******************************
 # * Button - Redirect To Frame *
@@ -93,25 +107,30 @@ async def redirect_to_frame_button(call: CallbackQuery):
                     )
                 else:
                     ids = queries["id"]
-                    session_id = user["session_id"]
 
                     if len(ids) == 1:
                         orchard_id = ids[0]
+                        session_id = user["session_id"]
 
                         physical_frame = await theater_handler.get_physical_frame(
                             theater=theater,
                             id=orchard_id,
                         )
 
-                        physical_frame_id = physical_frame.id
-                        physical_frame_link = f"frameLink://{theater}?id={physical_frame_id}"
-                        print_test(physical_frame_link)
-                        frame = theater_handler.build_frame_from_physical(physical_frame)
+                        physical_frame_link = f"frameLink://{theater}?id={physical_frame.id}&session_id={session_id}"
 
-                        # msg_id= await theater_handler.send_frame(
-                        #     frame=frame,
-                        #     chat_id=chat_id
-                        # )
+                        record_sent = PhysicalFrameSent_RecordSchema(
+                            session_id=session_id,
+                            physical_frame_id=physical_frame.id,
+                            frame_link=physical_frame_link
+                        )
+
+                        await theater_handler.register_physical_frame_shipment(
+                            chat_id=chat_id,
+                            frame=physical_frame,
+                            record=record_sent,
+                            callback_query_id=call.id
+                        )
 
                     else:
                         print(ids)

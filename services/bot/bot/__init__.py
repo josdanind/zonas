@@ -6,3 +6,6 @@ from .message_handler.main import *
 
 # Query Handler
 from .query_handler.main import goBack_button
+
+# Frame Handler
+from .frame_handler.main import theater_handler
